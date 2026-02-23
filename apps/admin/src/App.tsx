@@ -194,8 +194,6 @@ const App = () => {
               warnWhenUnsavedChanges: true,
             }}
           >
-              // apps/admin/src/App.tsx
-
               <Routes>
                   {/* Routes Protégées */}
                   <Route

@@ -1,22 +1,18 @@
-// ============================================
-// APPLICATION ADMIN PRINCIPALE - MÉMOIRE VIVE
-// ============================================
-// Refine + Ant Design Light Theme + Firebase + Routes
-// Location: apps/admin/src/App.tsx
+// apps/admin/src/App.tsx
 
 import { Refine, Authenticated } from '@refinedev/core';
 import {
     ThemedLayoutV2,
     ThemedSiderV2,
     useNotificationProvider,
-    ErrorComponent, Header,
+    ErrorComponent,
 } from '@refinedev/antd';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
-import routerBindings, { 
-  NavigateToResource, 
-  UnsavedChangesNotifier 
+import routerBindings, {
+    NavigateToResource,
+    UnsavedChangesNotifier
 } from '@refinedev/react-router-v6';
-import { ConfigProvider, App as AntdApp, theme } from 'antd';
+import { ConfigProvider, App as AntdApp } from 'antd';
 
 // Providers
 import { firestoreDataProvider } from './providers/firestoreDataProvider';
@@ -38,216 +34,103 @@ import { CountryEdit } from './resources/countries/edit';
 // Styles Ant Design
 import '@refinedev/antd/dist/reset.css';
 
-// ============================================
-// COMPOSANT TITRE SIDEBAR
-// ============================================
-
-const SidebarTitle = () => (
-  <div 
-    style={{ 
-      padding: '20px 16px', 
-      fontFamily: '"Cormorant Garamond", serif',
-      fontSize: '20px',
-      fontWeight: 300,
-      letterSpacing: '0.05em',
-      borderBottom: '1px solid #e8dcc8',
-    }}
-  >
-    Mémoire <span style={{ color: '#c4a77d' }}>Vive</span>
-    <div 
-      style={{
-        fontSize: '10px',
-        fontFamily: '"DM Sans", sans-serif',
-        fontWeight: 400,
-        letterSpacing: '0.15em',
-        color: '#999',
-        marginTop: '4px',
-        textTransform: 'uppercase',
-      }}
-    >
-      Admin
+// Titre personnalisé pour la Sidebar
+const SidebarTitle = ({ collapsed }: { collapsed: boolean }) => (
+    <div style={{
+        padding: '12px',
+        display: 'flex',
+        justifyContent: collapsed ? 'center' : 'flex-start',
+        alignItems: 'center'
+    }}>
+    <span style={{ fontWeight: 'bold', fontSize: '18px', color: '#1890ff' }}>
+      {collapsed ? 'MV' : 'MÉMOIRE VIVE'}
+    </span>
     </div>
-  </div>
 );
 
-// ============================================
-// CONFIGURATION LIGHT THEME
-// ============================================
-
-const lightThemeConfig = {
-  algorithm: theme.defaultAlgorithm,
-  token: {
-    // Couleur primaire dorée (accent)
-    colorPrimary: '#c4a77d',
-    
-    // Fonds clairs (light beige)
-    colorBgContainer: '#fefdfb',
-    colorBgElevated: '#ffffff',
-    colorBgLayout: '#f5f5f0',
-    
-    // Texte
-    colorText: '#2a2a2a',
-    colorTextSecondary: '#666666',
-    
-    // Bordures
-    colorBorder: '#e8dcc8',
-    colorBorderSecondary: '#f0ebe0',
-    
-    // Design
-    borderRadius: 8,
-    fontFamily: '"DM Sans", sans-serif',
-    fontSize: 14,
-    
-    // Spacing
-    marginSM: 8,
-    marginMD: 12,
-    marginLG: 16,
-    
-    // Ombre douce
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-  },
-  
-  components: {
-    Button: {
-      primaryColor: '#c4a77d',
-      controlHeight: 36,
-      fontWeight: 500,
-    },
-    Input: {
-      controlHeight: 36,
-      borderRadius: 6,
-    },
-    Select: {
-      controlHeight: 36,
-      borderRadius: 6,
-    },
-    Table: {
-      headerBg: '#f5f5f0',
-      headerColor: '#2a2a2a',
-      borderColor: '#e8dcc8',
-      rowHoverBg: '#fafaf7',
-    },
-    Card: {
-      colorBgContainer: '#ffffff',
-      boxShadow: 'none',
-      borderRadiusSM: 6,
-    },
-    Layout: {
-      colorBgHeader: '#ffffff',
-      colorBgBody: '#f5f5f0',
-      colorBgTrigger: '#e8dcc8',
-      borderColor: '#e8dcc8',
-    },
-  },
-};
-
-// ============================================
-// APPLICATION
-// ============================================
-
 const App = () => {
-  return (
-    <BrowserRouter>
-      {/* Configuration du thème Ant Design (Light) */}
-      <ConfigProvider theme={lightThemeConfig}>
-        <AntdApp>
-          <Refine
-            // ----------------------------------------
-            // Providers
-            // ----------------------------------------
-            dataProvider={firestoreDataProvider}
-            authProvider={authProvider}
-            routerProvider={routerBindings}
-            notificationProvider={useNotificationProvider}
-            
-            // ----------------------------------------
-            // Resources (collections Firestore)
-            // ----------------------------------------
-            resources={[
-              {
-                name: 'journalists',
-                list: '/journalists',
-                create: '/journalists/create',
-                edit: '/journalists/edit/:id',
-                meta: { 
-                  label: 'Journalists',
-                  icon: '📰',
-                },
-              },
-              {
-                name: 'countries',
-                list: '/countries',
-                create: '/countries/create',
-                edit: '/countries/edit/:id',
-                meta: { 
-                  label: 'Countries',
-                  icon: '🌍',
-                },
-              },
-            ]}
-            
-            // ----------------------------------------
-            // Options
-            // ----------------------------------------
-            options={{
-              syncWithLocation: true,
-              warnWhenUnsavedChanges: true,
-            }}
-          >
-              <Routes>
-                  {/* Routes Protégées */}
-                  <Route
-                      element={
-                          <Authenticated
-                              key="authenticated-routes"
-                              fallback={<NavigateToResource resource="login" />}
-                          >
-                              <ThemedLayoutV2
-                                  Header={() => <Header />}
-                                  Sider={(props) => <ThemedSiderV2 {...props} Title={SidebarTitle} />}
-                              >
-                                  <Outlet />
-                              </ThemedLayoutV2>
-                          </Authenticated>
-                      }
-                  >
-                      {/* Redirection par défaut si connecté */}
-                      <Route index element={<NavigateToResource resource="journalists" />} />
+    return (
+        <BrowserRouter>
+            <ConfigProvider>
+                <AntdApp>
+                    <Refine
+                        dataProvider={firestoreDataProvider}
+                        authProvider={authProvider}
+                        notificationProvider={useNotificationProvider}
+                        routerProvider={routerBindings}
+                        resources={[
+                            {
+                                name: 'journalists',
+                                list: '/journalists',
+                                create: '/journalists/create',
+                                edit: '/journalists/edit/:id',
+                                meta: { label: 'Journalistes' },
+                            },
+                            {
+                                name: 'countries',
+                                list: '/countries',
+                                create: '/countries/create',
+                                edit: '/countries/edit/:id',
+                                meta: { label: 'Pays' },
+                            },
+                        ]}
+                        options={{
+                            syncWithLocation: true,
+                            warnWhenUnsavedChanges: true,
+                        }}
+                    >
+                        <Routes>
+                            {/* 1. ROUTES PROTÉGÉES (Layout + Sidebar) */}
+                            <Route
+                                element={
+                                    <Authenticated
+                                        key="authenticated-inner"
+                                        fallback={<NavigateToResource resource="login" />}
+                                    >
+                                        <ThemedLayoutV2
+                                            Sider={(props) => <ThemedSiderV2 {...props} Title={SidebarTitle} />}
+                                        >
+                                            <Outlet />
+                                        </ThemedLayoutV2>
+                                    </Authenticated>
+                                }
+                            >
+                                {/* Redirection racine vers journalistes */}
+                                <Route index element={<NavigateToResource resource="journalists" />} />
 
-                      <Route path="/journalists">
-                          <Route index element={<JournalistList />} />
-                          <Route path="create" element={<JournalistCreate />} />
-                          <Route path="edit/:id" element={<JournalistEdit />} />
-                      </Route>
+                                <Route path="/journalists">
+                                    <Route index element={<JournalistList />} />
+                                    <Route path="create" element={<JournalistCreate />} />
+                                    <Route path="edit/:id" element={<JournalistEdit />} />
+                                </Route>
 
-                      <Route path="/countries">
-                          <Route index element={<CountryList />} />
-                          <Route path="create" element={<CountryCreate />} />
-                          <Route path="edit/:id" element={<CountryEdit />} />
-                      </Route>
-                  </Route>
+                                <Route path="/countries">
+                                    <Route index element={<CountryList />} />
+                                    <Route path="create" element={<CountryCreate />} />
+                                    <Route path="edit/:id" element={<CountryEdit />} />
+                                </Route>
+                            </Route>
 
-                  {/* Route publique : Login (Entourée de Authenticated avec v3 redirect) */}
-                  <Route
-                      element={
-                          <Authenticated key="auth-pages" fallback={<Outlet />}>
-                              <NavigateToResource resource="journalists" />
-                          </Authenticated>
-                      }
-                  >
-                      <Route path="/login" element={<LoginPage />} />
-                  </Route>
+                            {/* 2. ROUTE PUBLIQUE (Login) */}
+                            <Route
+                                element={
+                                    <Authenticated key="auth-pages" fallback={<Outlet />}>
+                                        <NavigateToResource resource="journalists" />
+                                    </Authenticated>
+                                }
+                            >
+                                <Route path="/login" element={<LoginPage />} />
+                            </Route>
 
-                  <Route path="*" element={<ErrorComponent />} />
-              </Routes>
-            
-            {/* Avertissement si modifications non sauvegardées */}
-            <UnsavedChangesNotifier />
-          </Refine>
-        </AntdApp>
-      </ConfigProvider>
-    </BrowserRouter>
-  );
+                            {/* 3. ERREUR 404 */}
+                            <Route path="*" element={<ErrorComponent />} />
+                        </Routes>
+                        <UnsavedChangesNotifier />
+                    </Refine>
+                </AntdApp>
+            </ConfigProvider>
+        </BrowserRouter>
+    );
 };
 
 export default App;

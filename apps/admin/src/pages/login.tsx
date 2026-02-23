@@ -6,6 +6,7 @@
 import { AuthPage } from '@refinedev/antd';
 
 export const LoginPage = () => {
+    console.log('🔐 [LOGIN] LoginPage rendering');
   return (
     <AuthPage
       type="login"
@@ -15,11 +16,11 @@ export const LoginPage = () => {
       title={
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           {/* Logo */}
-          <h1 
-            style={{ 
-              fontFamily: '"Cormorant Garamond", serif', 
-              fontWeight: 300, 
-              fontSize: 32, 
+          <h1
+            style={{
+              fontFamily: '"Cormorant Garamond", serif',
+              fontWeight: 300,
+              fontSize: 32,
               margin: 0,
               letterSpacing: '0.1em',
             }}
@@ -27,12 +28,12 @@ export const LoginPage = () => {
             Mémoire{' '}
             <span style={{ color: '#c4a77d' }}>Vive</span>
           </h1>
-          
+
           {/* Sous-titre */}
-          <p 
-            style={{ 
-              color: '#888', 
-              fontSize: 12, 
+          <p
+            style={{
+              color: '#888',
+              fontSize: 12,
               marginTop: 8,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
@@ -46,9 +47,9 @@ export const LoginPage = () => {
       // Configuration du formulaire
       // ----------------------------------------
       formProps={{
-        initialValues: { 
-          email: '', 
-          password: '' 
+        initialValues: {
+          email: '',
+          password: ''
         },
       }}
       // ----------------------------------------

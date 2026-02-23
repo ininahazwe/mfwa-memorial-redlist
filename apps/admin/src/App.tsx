@@ -34,7 +34,9 @@ import { CountryEdit } from './resources/countries/edit';
 // Styles Ant Design
 import '@refinedev/antd/dist/reset.css';
 
-// LOADING COMPONENT
+console.log('🟠 [APP] App component loading...');
+
+// LOADING SCREEN
 const LoadingScreen = () => (
     <div style={{
         display: 'flex',
@@ -42,10 +44,28 @@ const LoadingScreen = () => (
         alignItems: 'center',
         height: '100vh',
         width: '100vw',
+        backgroundColor: '#f5f5f5',
     }}>
         <Spin size="large" tip="Chargement..." />
     </div>
 );
+
+// LOGIN LAYOUT (sans sidebar)
+const LoginLayout = () => {
+    console.log('🔐 [APP] Rendering LoginLayout');
+    return (
+        <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            width: '100vw',
+            backgroundColor: '#f5f5f5',
+        }}>
+            <Outlet />
+        </div>
+    );
+};
 
 // Titre personnalisé pour la Sidebar
 const SidebarTitle = ({ collapsed }: { collapsed: boolean }) => (
@@ -62,7 +82,7 @@ const SidebarTitle = ({ collapsed }: { collapsed: boolean }) => (
 );
 
 const App = () => {
-    console.log("🟠 [APP] Rendering App component");
+    console.log('🟠 [APP] App component rendering');
 
     return (
         <BrowserRouter>
@@ -95,56 +115,63 @@ const App = () => {
                         }}
                     >
                         <Routes>
-                            {/* 1. ROUTES PROTÉGÉES (Layout + Sidebar) */}
+                            {/* ===== AUTHENTICATED ROUTES ===== */}
                             <Route
                                 element={
                                     <Authenticated
-                                        key="authenticated-inner"
+                                        key="authenticated-layout"
                                         fallback={<NavigateToResource resource="login" />}
                                         loading={<LoadingScreen />}
                                     >
                                         <ThemedLayoutV2
-                                            Sider={(props) => <ThemedSiderV2 {...props} Title={SidebarTitle} />}
+                                            Sider={(props) => (
+                                                <ThemedSiderV2 {...props} Title={SidebarTitle} />
+                                            )}
                                         >
                                             <Outlet />
                                         </ThemedLayoutV2>
                                     </Authenticated>
                                 }
                             >
-                                {/* Redirection racine vers journalistes */}
+                                {/* Index - redirect to journalists */}
                                 <Route index element={<NavigateToResource resource="journalists" />} />
 
-                                <Route path="/journalists">
+                                {/* Journalists CRUD */}
+                                <Route path="journalists">
                                     <Route index element={<JournalistList />} />
                                     <Route path="create" element={<JournalistCreate />} />
                                     <Route path="edit/:id" element={<JournalistEdit />} />
                                 </Route>
 
-                                <Route path="/countries">
+                                {/* Countries CRUD */}
+                                <Route path="countries">
                                     <Route index element={<CountryList />} />
                                     <Route path="create" element={<CountryCreate />} />
                                     <Route path="edit/:id" element={<CountryEdit />} />
                                 </Route>
                             </Route>
 
-                            {/* 2. ROUTE PUBLIQUE (Login) */}
+                            {/* ===== PUBLIC ROUTES ===== */}
                             <Route
                                 element={
                                     <Authenticated
-                                        key="auth-pages"
-                                        fallback={<Outlet />}
+                                        key="public-routes"
+                                        fallback={<LoginLayout />}
                                         loading={<LoadingScreen />}
                                     >
+                                        {/* Si authentifié, redirect vers journalistes */}
                                         <NavigateToResource resource="journalists" />
                                     </Authenticated>
                                 }
                             >
                                 <Route path="/login" element={<LoginPage />} />
+                                <Route path="*" element={<LoginPage />} />
                             </Route>
 
-                            {/* 3. ERREUR 404 */}
+                            {/* ===== 404 FALLBACK ===== */}
                             <Route path="*" element={<ErrorComponent />} />
                         </Routes>
+
                         <UnsavedChangesNotifier />
                     </Refine>
                 </AntdApp>

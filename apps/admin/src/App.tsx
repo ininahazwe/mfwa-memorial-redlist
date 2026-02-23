@@ -5,11 +5,11 @@
 // Location: apps/admin/src/App.tsx
 
 import { Refine, Authenticated } from '@refinedev/core';
-import { 
-  ThemedLayoutV2, 
-  ThemedSiderV2, 
-  useNotificationProvider, 
-  ErrorComponent,
+import {
+    ThemedLayoutV2,
+    ThemedSiderV2,
+    useNotificationProvider,
+    ErrorComponent, Header,
 } from '@refinedev/antd';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import routerBindings, { 
@@ -194,85 +194,54 @@ const App = () => {
               warnWhenUnsavedChanges: true,
             }}
           >
-            <Routes>
-              {/* ====================================== */}
-              {/* Routes protégées (nécessitent auth)   */}
-              {/* ====================================== */}
-              <Route
-                element={
-                  <Authenticated
-                    key="authenticated"
-                    fallback={<Outlet />}
-                  >
-                    <ThemedLayoutV2
-                      Sider={() => (
-                        <ThemedSiderV2 
-                          Title={() => <SidebarTitle />}
-                          render={({ items }) => (
-                            <>
-                              {items}
-                              
-                              {/* Lien vers le site public */}
-                              <div 
-                                style={{ 
-                                  padding: '16px',
-                                  borderTop: '1px solid #e8dcc8',
-                                  marginTop: 'auto',
-                                }}
+              // apps/admin/src/App.tsx
+
+              <Routes>
+                  {/* Routes Protégées */}
+                  <Route
+                      element={
+                          <Authenticated
+                              key="authenticated-routes"
+                              fallback={<NavigateToResource resource="login" />}
+                          >
+                              <ThemedLayoutV2
+                                  Header={() => <Header />}
+                                  Sider={(props) => <ThemedSiderV2 {...props} Title={SidebarTitle} />}
                               >
-                                <a 
-                                  href="https://mfwa-memorial.vercel.app/" 
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  style={{ 
-                                    color: '#999', 
-                                    fontSize: '12px',
-                                    textDecoration: 'none',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                  }}
-                                >
-                                  <span>↗</span>
-                                  <span>Visit the public site</span>
-                                </a>
-                              </div>
-                            </>
-                          )}
-                        />
-                      )}
-                    >
-                      <Outlet />
-                    </ThemedLayoutV2>
-                  </Authenticated>
-                }
-              >
-                {/* Redirection par défaut */}
-                <Route index element={<NavigateToResource resource="journalists" />} />
-                
-                {/* ====== Routes Journalistes ====== */}
-                <Route path="/journalists">
-                  <Route index element={<JournalistList />} />
-                  <Route path="create" element={<JournalistCreate />} />
-                  <Route path="edit/:id" element={<JournalistEdit />} />
-                </Route>
-                
-                {/* ====== Routes Pays ====== */}
-                <Route path="/countries">
-                  <Route index element={<CountryList />} />
-                  <Route path="create" element={<CountryCreate />} />
-                  <Route path="edit/:id" element={<CountryEdit />} />
-                </Route>
-                
-                {/* 404 */}
-                <Route path="*" element={<ErrorComponent />} />
-              </Route>
-              
-              {/* ====================================== */}
-              {/* Route publique : Login                */}
-              {/* ====================================== */}
-              <Route path="/login" element={<LoginPage />} />
-            </Routes>
+                                  <Outlet />
+                              </ThemedLayoutV2>
+                          </Authenticated>
+                      }
+                  >
+                      {/* Redirection par défaut si connecté */}
+                      <Route index element={<NavigateToResource resource="journalists" />} />
+
+                      <Route path="/journalists">
+                          <Route index element={<JournalistList />} />
+                          <Route path="create" element={<JournalistCreate />} />
+                          <Route path="edit/:id" element={<JournalistEdit />} />
+                      </Route>
+
+                      <Route path="/countries">
+                          <Route index element={<CountryList />} />
+                          <Route path="create" element={<CountryCreate />} />
+                          <Route path="edit/:id" element={<CountryEdit />} />
+                      </Route>
+                  </Route>
+
+                  {/* Route publique : Login (Entourée de Authenticated avec v3 redirect) */}
+                  <Route
+                      element={
+                          <Authenticated key="auth-pages" fallback={<Outlet />}>
+                              <NavigateToResource resource="journalists" />
+                          </Authenticated>
+                      }
+                  >
+                      <Route path="/login" element={<LoginPage />} />
+                  </Route>
+
+                  <Route path="*" element={<ErrorComponent />} />
+              </Routes>
             
             {/* Avertissement si modifications non sauvegardées */}
             <UnsavedChangesNotifier />

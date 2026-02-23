@@ -135,7 +135,13 @@ export const authProvider: AuthProvider = {
   // ON ERROR - Gestion des erreurs
   // ----------------------------------------
   onError: async (error) => {
-    console.error('Erreur auth:', error);
+    if (error.status === 401 || error.status === 403) {
+      return {
+        logout: true,
+        redirectTo: "/login",
+        error,
+      };
+    }
     return { error };
   },
 

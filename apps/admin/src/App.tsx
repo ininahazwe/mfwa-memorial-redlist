@@ -12,7 +12,7 @@ import routerBindings, {
     NavigateToResource,
     UnsavedChangesNotifier
 } from '@refinedev/react-router-v6';
-import { ConfigProvider, App as AntdApp } from 'antd';
+import { ConfigProvider, App as AntdApp, Spin } from 'antd';
 
 // Providers
 import { firestoreDataProvider } from './providers/firestoreDataProvider';
@@ -34,6 +34,19 @@ import { CountryEdit } from './resources/countries/edit';
 // Styles Ant Design
 import '@refinedev/antd/dist/reset.css';
 
+// LOADING COMPONENT
+const LoadingScreen = () => (
+    <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        width: '100vw',
+    }}>
+        <Spin size="large" tip="Chargement..." />
+    </div>
+);
+
 // Titre personnalisé pour la Sidebar
 const SidebarTitle = ({ collapsed }: { collapsed: boolean }) => (
     <div style={{
@@ -42,13 +55,15 @@ const SidebarTitle = ({ collapsed }: { collapsed: boolean }) => (
         justifyContent: collapsed ? 'center' : 'flex-start',
         alignItems: 'center'
     }}>
-    <span style={{ fontWeight: 'bold', fontSize: '18px', color: '#1890ff' }}>
-      {collapsed ? 'MV' : 'MÉMOIRE VIVE'}
-    </span>
+        <span style={{ fontWeight: 'bold', fontSize: '18px', color: '#1890ff' }}>
+            {collapsed ? 'MV' : 'MÉMOIRE VIVE'}
+        </span>
     </div>
 );
 
 const App = () => {
+    console.log("🟠 [APP] Rendering App component");
+
     return (
         <BrowserRouter>
             <ConfigProvider>
@@ -86,6 +101,7 @@ const App = () => {
                                     <Authenticated
                                         key="authenticated-inner"
                                         fallback={<NavigateToResource resource="login" />}
+                                        loading={<LoadingScreen />}
                                     >
                                         <ThemedLayoutV2
                                             Sider={(props) => <ThemedSiderV2 {...props} Title={SidebarTitle} />}
@@ -114,7 +130,11 @@ const App = () => {
                             {/* 2. ROUTE PUBLIQUE (Login) */}
                             <Route
                                 element={
-                                    <Authenticated key="auth-pages" fallback={<Outlet />}>
+                                    <Authenticated
+                                        key="auth-pages"
+                                        fallback={<Outlet />}
+                                        loading={<LoadingScreen />}
+                                    >
                                         <NavigateToResource resource="journalists" />
                                     </Authenticated>
                                 }

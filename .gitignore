@@ -1,0 +1,35 @@
+﻿$gitignore = @"
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Build
+dist/
+.vercel
+.output/
+*.tsbuildinfo
+
+# Dev
+.env.local
+.env.*.local
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Tests
+coverage/
+
+# Service account (CRITIQUE!)
+serviceAccountKey.json
+firebase-key.json
+
+# Firebase
+.firebase/
+.firebaserc
+"@

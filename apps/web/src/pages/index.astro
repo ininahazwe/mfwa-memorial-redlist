@@ -1,0 +1,33 @@
+---
+// Page d'accueil principale
+// 1/3 carte + 2/3 galerie (9 carrés)
+
+import Layout from '../layouts/LayoutHome.astro';
+import Header from '../components/Header.astro';
+import Map from '../components/Map.astro';
+import Gallery from '../components/Gallery.astro';
+import '../styles/global.css';
+
+import { getAllData } from '../lib/firebase';
+
+const { journalists, countries, totalJournalists } = await getAllData();
+
+if (journalists.length === 0 && countries.length === 0) {
+  console.warn('⚠️ Aucune donnée récupérée depuis Firebase');
+}
+---
+
+<Layout title="In Living Memory — In Tribute to Journalists Who Lost Their Lives">
+  
+  <Header />
+  
+  <!-- Layout : 1/3 carte + 2/3 galerie, fond texture unifié -->
+  <main class="flex h-screen">
+    <!-- Carte : 1/3 gauche -->
+    <Map countries={countries} totalJournalists={totalJournalists} />
+    
+    <!-- Galerie : 2/3 droite -->
+    <Gallery journalists={journalists} />
+  </main>
+  
+</Layout>

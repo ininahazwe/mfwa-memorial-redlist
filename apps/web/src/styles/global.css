@@ -1,0 +1,216 @@
+/* Polices Google */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&family=Inter:wght@700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+
+  :root {
+    --font-serif: 'Cormorant Garamond', serif;
+    --font-sans: 'DM Sans', sans-serif;
+    --font-display-bold: 'Inter', sans-serif;
+  }
+
+  body {
+    /*background-color: #d4d4cc;*/
+    color: #1e1e1e;
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/backgrounds/background.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.2;
+    z-index: -1;
+    pointer-events: none;
+  }
+  
+  ::selection {
+    background-color: rgba(196, 167, 125, 0.3);
+  }
+  
+  /* Scrollbar fine et élégante */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: #c4a77d;
+    border-radius: 2px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background-color: #d4d4cc;
+  }
+}
+
+@layer components {
+  /* Carte portrait avec effets hover */
+  .portrait-card {
+    position: relative;
+    overflow: hidden;
+    background-color: #f5f5f0;
+    cursor: pointer;
+    transition: transform 0.5s ease-out;
+    aspect-ratio: 1 / 1;
+  }
+  
+  .portrait-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid #d4d4cc;
+    z-index: 10;
+    transition: border-color 0.3s ease;
+  }
+  
+  .portrait-card:hover::before {
+    border-color: #c4a77d;
+  }
+  
+  .portrait-card:hover {
+    transform: translateY(-0.5rem);
+  }
+  
+  .portrait-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(100%);
+    transition: all 0.5s ease;
+  }
+  
+  .portrait-card:hover img {
+    filter: grayscale(0%);
+    transform: scale(1.05);
+  }
+  
+  /* Info au survol */
+  .portrait-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    padding-top: 2rem;
+    z-index: 20;
+    background: linear-gradient(to top, rgba(30, 30, 30, 0.95), transparent);
+    transform: translateY(1rem);
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  
+  .portrait-card:hover .portrait-info {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Titre principal (style Mikki Sindhunata) */
+  .title-display {
+    font-family: 'Inter', sans-serif;
+    font-size: 3rem;
+    line-height: 1.2;
+    font-weight: 900;
+    color: #1e1e1e;
+    letter-spacing: -0.02em;
+  }
+
+  /* Sous-titre */
+  .subtitle-main {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    line-height: 1.4;
+    font-weight: 300;
+    color: #1e1e1e;
+  }
+
+  .subtitle-accent {
+    font-style: italic;
+    color: #c4a77d;
+  }
+}
+
+/* Animation fadeIn pour les cartes */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(15px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+/* Styles Mapbox personnalisés - Design clair */
+.mapboxgl-popup-content {
+  background: #f5f5f0 !important;
+  border: 1px solid #d4d4cc !important;
+  border-radius: 6px !important;
+  padding: 0 !important;
+  color: #1e1e1e !important;
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: #f5f5f0 !important;
+}
+
+.mapboxgl-popup-close-button {
+  color: #c4a77d !important;
+}
+
+/* Contrôles Mapbox */
+.mapboxgl-ctrl-group button {
+  background-color: #f5f5f0 !important;
+  border: 1px solid #d4d4cc !important;
+  color: #1e1e1e !important;
+}
+
+.mapboxgl-ctrl-group button:hover {
+  background-color: #c4a77d !important;
+  color: #f5f5f0 !important;
+}
+
+.mapboxgl-ctrl-attribution {
+  background-color: rgba(245, 245, 240, 0.8) !important;
+  color: #646460 !important;
+}
+
+.mapboxgl-ctrl-attribution a {
+  color: #c4a77d !important;
+}
+
+/* Scrollbar personnalisée pour la galerie */
+section::-webkit-scrollbar {
+  width: 8px;
+}
+
+section::-webkit-scrollbar-track {
+  background-color: #d4d4cc;
+}
+
+section::-webkit-scrollbar-thumb {
+  background-color: #c4a77d;
+  border-radius: 4px;
+}
+
+section::-webkit-scrollbar-thumb:hover {
+  background-color: #b89860;
+}

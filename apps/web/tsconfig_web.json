@@ -1,0 +1,12 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "jsxImportSource": "astro",
+    "baseUrl": ".",
+    "paths": {
+      "@memoire-vive/shared/*": ["../../packages/shared/*"],
+      "@/*": ["./src/*"]
+    },
+    "types": ["astro/client"]
+  }
+}

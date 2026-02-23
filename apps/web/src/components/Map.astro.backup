@@ -1,0 +1,240 @@
+---
+// Carte interactive Mapbox avec :
+// - Marqueurs circulaires par pays (affichant le nombre de journalistes)
+// - Popup au hover avec description du pays
+// - Clic sur marqueur → filtre la galerie
+// - Clic sur la carte → efface le filtre
+
+interface Country {
+  id: string;
+  name: string;
+  coords: { lat: number; lng: number };
+  description: string;
+  journalistCount: number;
+}
+
+interface Props {
+  countries: Country[];
+  totalJournalists: number;
+}
+
+const { countries, totalJournalists } = Astro.props;
+---
+
+<section class="w-1/3 h-screen relative border-r border-border">
+  
+  <!-- Conteneur de la carte -->
+  <div id="map" class="h-full w-full"></div>
+  
+  <!-- Overlay dégradé (effet fondu vers la droite) -->
+  <div class="absolute inset-0 pointer-events-none z-10 bg-gradient-to-r from-transparent to-deep"></div>
+  <div class="absolute inset-0 pointer-events-none z-10 bg-gradient-to-b from-deep via-transparent to-deep opacity-80"></div>
+  
+  <!-- Panneau d'informations en bas à gauche -->
+  <div class="absolute bottom-8 left-6 z-20 max-w-[90%]">
+    <h2 class="font-display text-3xl font-light leading-none mb-3">
+      Afrique<br />de l'Ouest
+    </h2>
+    <p class="text-sm text-muted max-w-[260px] leading-relaxed">
+      Une région où le journalisme reste un métier à haut risque.
+    </p>
+    
+    <!-- Statistiques -->
+    <div class="flex gap-6 mt-5">
+      <div>
+        <div class="font-display text-3xl font-light text-accent leading-none">
+          {totalJournalists}
+        </div>
+        <div class="text-[0.6rem] uppercase tracking-wider text-muted mt-1">
+          Journalistes<br />disparus
+        </div>
+      </div>
+      <div>
+        <div class="font-display text-3xl font-light text-accent leading-none">
+          {countries.length}
+        </div>
+        <div class="text-[0.6rem] uppercase tracking-wider text-muted mt-1">
+          Pays<br />concernés
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</section>
+
+<script define:vars={{ countriesData: countries }}>
+  // ============================================
+  // MAPBOX INITIALIZATION
+  // ============================================
+  
+  // Importer Mapbox dynamiquement
+  async function initMap() {
+    // Charger le script Mapbox
+    const mapboxgl = await import('https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js');
+    
+    // Token Mapbox (à remplacer par votre token)
+    // En production, utiliser : import.meta.env.PUBLIC_MAPBOX_TOKEN
+    mapboxgl.accessToken = 'pk.eyJ1IjoibWVtb2lyZS12aXZlIiwiYSI6ImNtN2V4YW1wbGUifQ.demo';
+    
+    // Créer la carte
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/dark-v11',
+      center: [-2, 12.5],  // Centre sur l'Afrique de l'Ouest
+      zoom: 4.5,
+      attributionControl: false,
+    });
+    
+    // Désactiver le zoom par scroll (meilleure UX)
+    map.scrollZoom.disable();
+    
+    // Ajouter les contrôles de navigation
+    map.addControl(
+      new mapboxgl.NavigationControl({ showCompass: false }), 
+      'top-left'
+    );
+    
+    // ============================================
+    // MARKERS
+    // ============================================
+    
+    map.on('load', () => {
+      
+      // Créer un marqueur pour chaque pays
+      countriesData.forEach(country => {
+        
+        // Élément DOM du marqueur
+        const el = document.createElement('div');
+        el.className = 'country-marker';
+        el.textContent = country.journalistCount.toString();
+        
+        // Styles du marqueur
+        Object.assign(el.style, {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '32px',
+          height: '32px',
+          background: '#141414',
+          border: '2px solid #c4a77d',
+          borderRadius: '50%',
+          color: '#c4a77d',
+          fontFamily: '"Cormorant Garamond", serif',
+          fontSize: '0.9rem',
+          fontWeight: '600',
+          cursor: 'pointer',
+          transition: 'all 0.3s ease',
+          boxShadow: '0 0 15px rgba(196, 167, 125, 0.3)',
+        });
+        
+        // ============================================
+        // HOVER EFFECTS
+        // ============================================
+        
+        el.addEventListener('mouseenter', () => {
+          if (!el.classList.contains('active')) {
+            el.style.background = '#c4a77d';
+            el.style.color = '#0a0a0a';
+            el.style.transform = 'scale(1.15)';
+            el.style.boxShadow = '0 0 25px rgba(196, 167, 125, 0.6)';
+          }
+        });
+        
+        el.addEventListener('mouseleave', () => {
+          if (!el.classList.contains('active')) {
+            el.style.background = '#141414';
+            el.style.color = '#c4a77d';
+            el.style.transform = 'scale(1)';
+            el.style.boxShadow = '0 0 15px rgba(196, 167, 125, 0.3)';
+          }
+        });
+        
+        // ============================================
+        // POPUP
+        // ============================================
+        
+        const popup = new mapboxgl.Popup({
+          offset: 25,
+          closeButton: false,
+          closeOnClick: false,
+        }).setHTML(`
+          <div style="padding: 1rem 1.25rem; min-width: 200px; max-width: 250px;">
+            <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: #c4a77d; margin-bottom: 0.5rem;">
+              ${country.name}
+            </div>
+            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #8a8a85; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.06);">
+              <strong style="color: #f5f5f0; font-size: 1.1rem;">${country.journalistCount}</strong> journaliste${country.journalistCount > 1 ? 's' : ''} disparu${country.journalistCount > 1 ? 's' : ''}
+            </div>
+            <p style="font-size: 0.8rem; line-height: 1.6; color: #8a8a85; margin: 0;">
+              ${country.description}
+            </p>
+            <p style="margin-top: 0.75rem; font-size: 0.7rem; color: #c4a77d; font-style: italic;">
+              Cliquez pour voir les portraits →
+            </p>
+          </div>
+        `);
+        
+        // Créer le marqueur Mapbox
+        const marker = new mapboxgl.Marker(el)
+          .setLngLat([country.coords.lng, country.coords.lat])
+          .setPopup(popup)
+          .addTo(map);
+        
+        // Afficher/masquer popup au hover
+        el.addEventListener('mouseenter', () => marker.togglePopup());
+        el.addEventListener('mouseleave', () => marker.togglePopup());
+        
+        // ============================================
+        // CLICK → FILTER
+        // ============================================
+        
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          
+          // Désactiver tous les marqueurs
+          document.querySelectorAll('.country-marker').forEach(m => {
+            m.classList.remove('active');
+            m.style.background = '#141414';
+            m.style.color = '#c4a77d';
+            m.style.transform = 'scale(1)';
+          });
+          
+          // Activer ce marqueur
+          el.classList.add('active');
+          el.style.background = '#c4a77d';
+          el.style.color = '#0a0a0a';
+          el.style.transform = 'scale(1.15)';
+          
+          // Filtrer la galerie
+          if (window.setCountryFilter) {
+            window.setCountryFilter(country.id, country.name);
+          }
+        });
+        
+      }); // fin forEach
+      
+      // ============================================
+      // CLICK ON MAP → CLEAR FILTER
+      // ============================================
+      
+      map.on('click', () => {
+        // Désactiver tous les marqueurs
+        document.querySelectorAll('.country-marker').forEach(m => {
+          m.classList.remove('active');
+          m.style.background = '#141414';
+          m.style.color = '#c4a77d';
+          m.style.transform = 'scale(1)';
+        });
+        
+        // Effacer le filtre
+        if (window.clearCountryFilter) {
+          window.clearCountryFilter();
+        }
+      });
+      
+    }); // fin map.on('load')
+  }
+  
+  // Lancer l'initialisation
+  initMap();
+</script>

@@ -1,0 +1,40 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Vérifie si l'utilisateur est admin
+    function isAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Collection: journalists
+    match /journalists/{journalistId} {
+      // Lecture: public si publié, sinon admin seulement
+      // allow read: if resource.data.isPublished == true || isAdmin();
+      allow read: if true; // Test temporaire
+      
+      // Écriture: admin seulement
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Collection: countries
+    match /countries/{countryId} {
+      // Lecture: publique (tout le monde peut voir les pays)
+      allow read: if true;
+      
+      // Écriture: admin seulement
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Collection: admins (liste des administrateurs)
+    match /admins/{userId} {
+      // Lecture: seulement son propre document
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Écriture: interdit (géré manuellement via console Firebase)
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,18 @@
+﻿/* 1. POLICES */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap');
+
+/* 2. TAILWIND CSS v4 - ACTIVÉ */
+@import "tailwindcss";
+
+/* 3. SURCHARGES ANT DESIGN */
+.ant-input,
+.ant-select-selector {
+    background-color: transparent !important;
+    color: #808080 !important;
+    border-color: #e8dcc8 !important;
+}
+
+/* 4. BODY STYLES */
+body {
+    font-family: 'DM Sans', sans-serif;
+}

@@ -1,0 +1,24 @@
+{
+  "buildCommand": "npm install && npm run build",
+  "outputDirectory": "apps/web/.vercel/output",
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "framework": "astro",
+  "regions": ["sfo1"],
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/admin",
+      "destination": "/admin/index.html"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/admin/:path*"
+    }
+  ]
+}

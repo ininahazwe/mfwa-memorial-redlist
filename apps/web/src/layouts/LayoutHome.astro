@@ -1,0 +1,35 @@
+---
+// LayoutHome.astro
+// Layout ACCUEIL avec SplashScreen
+
+import SplashScreen from '../components/Animation.astro';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Mémoire Vive - Hommage aux journalistes disparus" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <!-- SplashScreen UNIQUEMENT sur l'accueil -->
+    <SplashScreen />
+    
+    <!-- Contenu principal -->
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  /* Styles globaux */
+</style>

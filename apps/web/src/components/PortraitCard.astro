@@ -1,0 +1,73 @@
+---
+// Composant réutilisable pour afficher un portrait de journaliste
+// Utilise les classes .portrait-card définies dans global.css
+
+interface Props {
+  journalist: {
+    id: string;
+    name: string;
+    countryId: string;
+    countryName?: string;
+    role: string;
+    yearOfDeath: number;
+    photoUrl: string;
+  };
+  index?: number; // Pour décaler l'animation d'entrée
+}
+
+const { journalist, index = 0 } = Astro.props;
+---
+
+<article 
+  class="portrait-card animate-fade-in"
+  style={`animation-delay: ${index * 0.1}s; opacity: 0;`}
+  data-journalist-id={journalist.id}
+  data-country-id={journalist.countryId}
+>
+  <!-- Photo en grayscale (couleur au hover via CSS) -->
+  <img 
+    src={journalist.photoUrl} 
+    alt={`Portrait de ${journalist.name}`}
+    loading="lazy"
+    decoding="async"
+    class="w-full h-full object-cover"
+  />
+  
+  <!-- Année de disparition (apparaît au hover) -->
+  <span class="portrait-date">
+    †{journalist.yearOfDeath}
+  </span>
+  
+  <!-- Informations (apparaît au hover) -->
+  <div class="portrait-info">
+    <h3 class="font-serif text-lg font-normal mb-0.5 text-white">
+      {journalist.name}
+    </h3>
+    <p class="text-xs text-gray-200 uppercase tracking-wider">
+      <span class="text-accent">{journalist.countryName}</span> • {journalist.role}
+    </p>
+  </div>
+</article>
+
+<style>
+  /* Date en haut à droite - cachée par défaut */
+  .portrait-date {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    color: #c4a77d;
+    background: rgba(30, 30, 30, 0.7);
+    padding: 0.2rem 0.5rem;
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 20;
+  }
+  
+  /* Afficher la date au hover */
+  .portrait-card:hover .portrait-date {
+    opacity: 1;
+  }
+</style>

@@ -1,0 +1,127 @@
+---
+// SplashScreen.astro
+// Animation d'ouverture (splash screen) qui masque le chargement des données
+// Durée : ~2.5 secondes (1.5s d'apparition + 1s de disparition)
+---
+
+<div class="splash-screen fixed inset-0 z-[9999] bg-texture flex items-center justify-center">
+  <div class="splash-content text-center max-w-2xl px-6">
+    <!-- Ligne 1 : "In Living Memory of" -->
+    <p class="splash-line splash-line-1 text-sm uppercase tracking-[0.3em] text-text-muted mb-6">
+      In Living Memory of
+    </p>
+    
+    <!-- Ligne 2 : "Those who dared to speak the truth" -->
+    <h1 class="splash-line splash-line-2 font-display-bold text-5xl lg:text-6xl font-black text-dark leading-tight mb-8">
+      Those who dared<br />to speak the truth
+    </h1>
+    
+    <!-- Ligne 3 : Trait décoratif -->
+    <div class="splash-line splash-line-3 h-1 w-16 bg-accent mx-auto"></div>
+  </div>
+</div>
+
+<style>
+  /* ============================================
+     SPLASH SCREEN - Conteneur principal
+     ============================================ */
+  
+  .splash-screen {
+    animation: splashFadeOut 1s ease-in-out forwards;
+    animation-delay: 2.5s;
+    backdrop-filter: blur(0px);
+  }
+
+  /* ============================================
+     ANIMATIONS TEXTE - Staggered fade in
+     ============================================ */
+
+  .splash-content {
+    animation: splashContentScale 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  .splash-line {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  /* Ligne 1 : "In Living Memory of" */
+  .splash-line-1 {
+    animation: fadeInSlideUp 1s ease-out forwards;
+    animation-delay: 0.2s;
+  }
+
+  /* Ligne 2 : "Those who dared..." */
+  .splash-line-2 {
+    animation: fadeInSlideUp 1s ease-out forwards;
+    animation-delay: 0.8s;
+  }
+
+  /* Ligne 3 : Trait décoratif */
+  .splash-line-3 {
+    animation: slideInWidth 0.8s ease-out forwards;
+    animation-delay: 1.5s;
+    transform: scaleX(0);
+    transform-origin: center;
+  }
+
+  /* ============================================
+     KEYFRAMES - Animations
+     ============================================ */
+
+  @keyframes fadeInSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInWidth {
+    from {
+      transform: scaleX(0);
+      opacity: 0;
+    }
+    to {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes splashContentScale {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes splashFadeOut {
+    from {
+      opacity: 1;
+      visibility: visible;
+    }
+    to {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+  }
+
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
+
+  @media (max-width: 768px) {
+    .splash-line-2 {
+      font-size: 2.25rem !important;
+      line-height: 1.2;
+    }
+  }
+</style>

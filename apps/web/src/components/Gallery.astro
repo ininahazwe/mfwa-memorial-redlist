@@ -1,0 +1,272 @@
+---
+// Galerie de portraits avec :
+// - Grille 3×3 (9 portraits visibles)
+// - Carrés parfaits (aspect-ratio 1:1)
+// - Rotation automatique toutes les 4 secondes
+// - Filtrage par pays (via window.setCountryFilter / clearCountryFilter)
+
+interface Journalist {
+  id: string;
+  name: string;
+  countryId: string;
+  countryName?: string;
+  role: string;
+  yearOfDeath: number;
+  photoUrl: string;
+}
+
+interface Props {
+  journalists: Journalist[];
+}
+
+const { journalists } = Astro.props;
+---
+
+<!-- GALERIE : 2/3 à droite avec padding optimisé pour grille 3×3 -->
+<section class="w-2/3 h-screen overflow-y-auto p-6 pt-20 flex flex-col md:w-full md:p-4 sm:p-4 relative">
+
+  <!-- En-tête avec titre et description -->
+  <div class="mb-6 pb-4 flex flex-col">
+    <!-- Titre principal - Style impactant mais pas trop gros -->
+    <h1 class="font-display-bold text-3xl font-black text-dark mb-2" style="letter-spacing: -0.02em; z-index: 99;">
+      Those who dared
+    </h1>
+    <!-- Sous-titre avec accent doré -->
+    <p class="font-serif text-xl font-light text-dark mb-3 -z-50">
+      <em class="italic text-accent">to speak the truth</em>
+    </p>
+    <!-- Description -->
+    <p class="text-sm leading-relaxed max-w-2xl" style="color: #646460;">
+      Their pens have fallen silent, but their words still resonate. <br />
+      This gallery pays tribute to journalists who sacrificed their lives to inform the public.
+    </p>
+  </div>
+  
+  <!-- Indicateur de filtre actif (caché par défaut) -->
+  <div 
+    id="filterIndicator" 
+    class="hidden items-center gap-3 mb-4 px-4 py-2 bg-white text-sm"
+    style="border: 0.0625vw solid #e8e8e8; border-radius: 2.1875vw;"
+  >
+    <span style="color: #1e1e1e;">
+      Filtre : <strong id="filterCountryName" style="color: #c4a77d;"></strong>
+    </span>
+    <button 
+      id="clearFilter" 
+      class="text-lg leading-none transition-colors"
+      style="color: #c4a77d;"
+      title="Effacer le filtre"
+    >
+      ✕
+    </button>
+  </div>
+  
+  <!-- Grille 4×3 de carrés PARFAITS -->
+  <div 
+    id="galleryGrid" 
+    class="grid flex-1 gap-4 min-h-0 overflow-y-auto"
+    style="grid-template-columns: repeat(5, 1fr); grid-auto-rows: 1fr; gap: 10px;"
+  >
+    <!-- Les portraits seront injectés par JavaScript -->
+  </div>
+  
+</section>
+
+<script define:vars={{ allJournalists: journalists }}>
+  // ============================================
+  // STATE
+  // ============================================
+  
+  let currentFilter = null;
+  let displayedJournalists = [];
+  let rotationInterval = null;
+  
+  // ============================================
+  // DOM ELEMENTS
+  // ============================================
+  
+  const grid = document.getElementById('galleryGrid');
+  const filterIndicator = document.getElementById('filterIndicator');
+  const filterCountryName = document.getElementById('filterCountryName');
+  const clearFilterBtn = document.getElementById('clearFilter');
+  
+  // ============================================
+  // UTILS
+  // ============================================
+  
+  // Mélanger un tableau (Fisher-Yates)
+  function shuffle(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+  
+  // Obtenir les journalistes filtrés
+  function getFiltered() {
+    if (currentFilter) {
+      return allJournalists.filter(j => j.countryId === currentFilter);
+    }
+    return [...allJournalists];
+  }
+  
+  // ============================================
+  // CARD CREATION
+  // ============================================
+  
+  function createCard(journalist, index = 0) {
+    const card = document.createElement('a');
+    card.href = `/journalists/${journalist.id}`;
+    card.className = 'portrait-card animate-fade-in';
+    card.style.cssText = `animation-delay: ${index * 0.1}s; opacity: 0;`;
+    card.dataset.journalistId = journalist.id;
+    card.dataset.countryId = journalist.countryId;
+    
+    card.innerHTML = `
+      <img 
+        src="${journalist.photoUrl}" 
+        alt="Portrait de ${journalist.name}" 
+        loading="lazy"
+        decoding="async"
+        class="w-full h-full object-cover"
+      />
+      <span class="portrait-date">†${journalist.yearOfDeath}</span>
+      <div class="portrait-info">
+        <h3 class="font-serif text-lg font-normal mb-0.5 text-white">
+          ${journalist.name}
+        </h3>
+        <p class="text-xs text-gray-200 uppercase tracking-wider">
+          <span class="text-accent">${journalist.countryName || ''}</span> • ${journalist.role}
+        </p>
+      </div>
+    `;
+    
+    return card;
+  }
+  
+  // ============================================
+  // GALLERY MANAGEMENT
+  // ============================================
+  
+  function initGallery() {
+    const filtered = getFiltered();
+    const shuffled = shuffle(filtered);
+    
+    displayedJournalists = shuffled.slice(0, 15);
+    
+    grid.innerHTML = '';
+    displayedJournalists.forEach((journalist, index) => {
+      grid.appendChild(createCard(journalist, index));
+    });
+  }
+  
+  function rotatePortrait() {
+    const filtered = getFiltered();
+    
+    if (filtered.length <= 9) return;
+    
+    const cards = grid.querySelectorAll('.portrait-card');
+    if (cards.length === 0) return;
+    
+    const slotIndex = Math.floor(Math.random() * Math.min(9, cards.length));
+    const card = cards[slotIndex];
+    
+    const displayedIds = displayedJournalists.map(j => j.id);
+    const available = filtered.filter(j => !displayedIds.includes(j.id));
+    
+    if (available.length === 0) return;
+    
+    const newJournalist = available[Math.floor(Math.random() * available.length)];
+    
+    card.style.opacity = '0';
+    card.style.transform = 'scale(0.95)';
+    
+    setTimeout(() => {
+      displayedJournalists[slotIndex] = newJournalist;
+      const newCard = createCard(newJournalist);
+      card.replaceWith(newCard);
+    }, 500);
+  }
+  
+  // ============================================
+  // ROTATION CONTROL
+  // ============================================
+  
+  function startRotation() {
+    stopRotation();
+    const filtered = getFiltered();
+    
+    if (filtered.length > 9) {
+      rotationInterval = setInterval(rotatePortrait, 4000);
+    }
+  }
+  
+  function stopRotation() {
+    if (rotationInterval) {
+      clearInterval(rotationInterval);
+      rotationInterval = null;
+    }
+  }
+  
+  // ============================================
+  // FILTER API
+  // ============================================
+  
+  window.setCountryFilter = function(countryId, countryName) {
+    currentFilter = countryId;
+    
+    filterIndicator.classList.remove('hidden');
+    filterIndicator.classList.add('flex');
+    filterCountryName.textContent = countryName;
+    
+    initGallery();
+    startRotation();
+  };
+  
+  window.clearCountryFilter = function() {
+    currentFilter = null;
+    
+    filterIndicator.classList.add('hidden');
+    filterIndicator.classList.remove('flex');
+    
+    if (window.resetMapFilter) {
+      window.resetMapFilter();
+    }
+    
+    initGallery();
+    startRotation();
+  };
+  
+  // ============================================
+  // INITIALIZATION
+  // ============================================
+  
+  clearFilterBtn.addEventListener('click', window.clearCountryFilter);
+  
+  initGallery();
+  
+  setTimeout(startRotation, 2000);
+</script>
+
+<style is:global>
+  .portrait-date {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    color: #c4a77d;
+    background: rgba(30, 30, 30, 0.7);
+    padding: 0.2rem 0.5rem;
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 20;
+  }
+  
+  .portrait-card:hover .portrait-date {
+    opacity: 1;
+  }
+</style>

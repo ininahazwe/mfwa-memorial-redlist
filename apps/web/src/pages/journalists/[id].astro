@@ -1,0 +1,152 @@
+---
+// ============================================
+// PAGE DÉTAIL JOURNALISTE
+// ============================================
+// Dynamic route : /journalists/[id]
+
+import Layout from '../../layouts/LayoutDefault.astro';
+import { getJournalistById, getJournalistsByCountry } from '../../lib/firebase';
+
+// Récupérer l'ID du journaliste depuis l'URL
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect('/');
+}
+
+// Récupérer le journaliste
+const journalist = await getJournalistById(id);
+
+// Si le journaliste n'existe pas, rediriger
+if (!journalist) {
+  return Astro.redirect('/');
+}
+
+// Récupérer les autres journalistes du même pays
+const countryJournalists = await getJournalistsByCountry(journalist.countryId);
+const otherJournalists = countryJournalists.filter(j => j.id !== journalist.id);
+---
+
+<Layout title={`${journalist.name} — Mémoire Vive`}>
+  <div class="h-screen overflow-y-auto bg-deep text-primary">
+    
+    <!-- En-tête avec retour -->
+    <header class="sticky top-0 z-50 bg-gradient-to-b from-deep to-transparent px-6 py-5">
+      <a href="/" class="inline-flex items-center gap-2 text-accent hover:text-primary transition-colors">
+        <span>←</span>
+        <span class="font-display text-sm tracking-widest uppercase">Back</span>
+      </a>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-6 py-12">
+      
+      <!-- Conteneur principal : Photo + Info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        
+        <!-- Photo en grand -->
+        <div class="flex items-start">
+          <div class="w-full aspect-[3/4] overflow-hidden rounded-sm border border-border">
+            <img 
+              src={journalist.photoUrl}
+              alt={`Portrait de ${journalist.name}`}
+              class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
+            />
+          </div>
+        </div>
+
+        <!-- Informations -->
+        <div class="flex flex-col justify-start gap-8">
+          
+          <!-- Nom et rôle -->
+          <div>
+            <h1 class="font-display text-5xl font-light leading-tight mb-4">
+              {journalist.name}
+            </h1>
+            <p class="text-xl text-accent font-light mb-2">
+              {journalist.role}
+            </p>
+            <p class="text-sm text-muted uppercase tracking-wider">
+              {journalist.countryName} • {journalist.yearOfDeath}
+            </p>
+          </div>
+
+          <!-- Détails clés -->
+          <div class="space-y-4">
+            {journalist.placeOfDeath && (
+              <div>
+                <p class="text-xs text-muted uppercase tracking-wider mb-1">Location</p>
+                <p class="text-primary">{journalist.placeOfDeath}</p>
+              </div>
+            )}
+            
+            {journalist.circumstances && (
+              <div>
+                <p class="text-xs text-muted uppercase tracking-wider mb-1">Circonstances</p>
+                <p class="text-primary leading-relaxed">{journalist.circumstances}</p>
+              </div>
+            )}
+          </div>
+
+          <!-- Bouton partage (optionnel) -->
+          <div class="pt-4 border-t border-border">
+            <button 
+              onclick="navigator.share({title: '${journalist.name}', url: window.location.href})"
+              class="text-sm text-accent hover:text-primary transition-colors uppercase tracking-wider"
+            >
+              Share
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Biographie -->
+      {journalist.bio && (
+        <section class="mb-16 pb-16 border-b border-border">
+          <h2 class="font-display text-3xl font-light mb-6">
+            Biography
+          </h2>
+          <p class="text-base leading-relaxed text-primary/90 max-w-2xl">
+            {journalist.bio}
+          </p>
+        </section>
+      )}
+
+      <!-- Autres journalistes du même pays -->
+      {otherJournalists.length > 0 && (
+        <section>
+          <h2 class="font-display text-3xl font-light mb-8">
+            Other victims from {journalist.countryName}
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {otherJournalists.map(other => (
+              <a 
+                href={`/journalists/${other.id}`}
+                class="group"
+              >
+                <div class="aspect-[3/4] overflow-hidden rounded-sm border border-border mb-3 group-hover:border-accent transition-colors">
+                  <img 
+                    src={other.photoUrl}
+                    alt={`Portrait de ${other.name}`}
+                    class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                  />
+                </div>
+                <h3 class="font-display text-lg font-normal group-hover:text-accent transition-colors">
+                  {other.name}
+                </h3>
+                <p class="text-xs text-muted uppercase tracking-wider">
+                  {other.role} • {other.yearOfDeath}
+                </p>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
+    </main>
+  </div>
+</Layout>
+
+<style>
+  /* Aucun style supplémentaire nécessaire, utilise Tailwind */
+</style>

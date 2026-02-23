@@ -1,0 +1,314 @@
+---
+// ============================================
+// COMPOSANT : MAP (MAPBOX GL JS + FILTRAGE)
+// ============================================
+
+// Types locaux
+interface Coords {
+  lat: number;
+  lng: number;
+}
+
+interface Country {
+  id: string;
+  name: string;
+  code: string;
+  coords: Coords;
+  description: string;
+  riskLevel: 'high' | 'critical' | 'extreme';
+  journalistCount?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+interface Props {
+  countries: Country[];
+  totalJournalists: number;
+}
+
+const { countries, totalJournalists } = Astro.props;
+
+const mapboxToken = import.meta.env.PUBLIC_MAPBOX_TOKEN;
+
+if (!mapboxToken) {
+  console.warn('⚠️ PUBLIC_MAPBOX_TOKEN n\'est pas défini');
+}
+
+const countriesJSON = JSON.stringify(countries);
+---
+
+<div class="map-container">
+  <!-- Conteneur pour Mapbox -->
+  <div id="map" class="map"></div>
+
+  <!-- Statistiques -->
+  <div class="map-stats">
+    <div class="stat">
+      <span class="value">{totalJournalists}</span>
+      <span class="label">Journalists</span>
+    </div>
+    <div class="stat">
+      <span class="value">{countries.length}</span>
+      <span class="label">Countries</span>
+    </div>
+  </div>
+</div>
+
+<!-- Charger Mapbox GL JS depuis CDN -->
+<link
+  href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css"
+  rel="stylesheet"
+/>
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
+<style>
+  .map-container {
+    position: relative;
+    width: 33.333%;
+    height: 100%;
+    background-color: #d4d4cc;
+  }
+
+  #map {
+    width: 100%;
+    height: 100%;
+  }
+
+  .map-stats {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    gap: 15px;
+    z-index: 10;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 15px;
+    background-color: rgba(245, 245, 240, 0.95);
+    border-radius: 8px;
+  }
+
+  .label {
+    font-size: 0.75rem;
+    color: #646460;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+
+  .value {
+    font-size: 1.5rem;
+    color: #212121;
+    font-weight: bold;
+  }
+
+  /* Styles Mapbox personnalisés */
+  :global(.mapboxgl-ctrl-attribution) {
+    background-color: rgba(245, 245, 240, 0.9) !important;
+    color: #646460 !important;
+  }
+
+  :global(.mapboxgl-ctrl-attribution a) {
+    color: #c4a77d !important;
+  }
+
+  :global(.mapboxgl-ctrl-group button) {
+    background-color: #f5f5f0 !important;
+    border: 1px solid #d4d4cc !important;
+    color: #1e1e1e !important;
+  }
+
+  :global(.mapboxgl-ctrl-group button:hover) {
+    background-color: #c4a77d !important;
+    color: #f5f5f0 !important;
+  }
+
+  :global(.mapboxgl-popup-content) {
+    background-color: #f5f5f0 !important;
+    border: 1px solid #d4d4cc !important;
+    color: #1e1e1e !important;
+  }
+
+  :global(.mapboxgl-popup-close-button) {
+    color: #c4a77d !important;
+  }
+
+  :global(.mapboxgl-popup-tip) {
+    border-top-color: #f5f5f0 !important;
+  }
+
+  /* Marqueur actif/hover */
+  :global(.marker-active) {
+    filter: brightness(1.3) !important;
+  }
+</style>
+
+<script define:vars={{ countriesJSON, mapboxToken }}>
+  // ============================================
+  // LOGIQUE MAPBOX + FILTRAGE
+  // ============================================
+
+  const countries = JSON.parse(countriesJSON);
+
+  console.log('🔑 Token Mapbox disponible :', !!mapboxToken);
+
+  if (!mapboxToken) {
+    console.error('❌ Token Mapbox manquant');
+    document.getElementById('map').innerHTML =
+      '<div style="color: red; padding: 20px;">❌ Token Mapbox manquant</div>';
+    throw new Error('Mapbox token required');
+  }
+
+  let map = null;
+  let selectedCountryId = null;
+  const markers = {};
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMap);
+  } else {
+    initMap();
+  }
+
+  function initMap() {
+    if (typeof mapboxgl === 'undefined') {
+      console.error('❌ Mapbox GL JS non chargé');
+      return;
+    }
+
+    mapboxgl.accessToken = mapboxToken;
+
+    console.log('🗺️ Initialisation de la carte Mapbox...');
+
+    try {
+      map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/light-v11',
+        center: [-2, 18],
+        zoom: 2.5,
+        attributionControl: true,
+      });
+
+      map.on('load', function() {
+        console.log('✅ Carte Mapbox chargée');
+
+        countries.forEach(country => {
+          const riskColors = {
+            high: '#c4a77d',
+            critical: '#d4845f',
+            extreme: '#a65d57',
+          };
+
+          const color = riskColors[country.riskLevel] || '#c4a77d';
+
+          const el = document.createElement('div');
+          el.className = 'marker-element';
+          el.style.cssText = `
+            width: 40px;
+            height: 40px;
+            background-color: ${color};
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          `;
+          el.textContent = country.journalistCount || 0;
+
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            console.log('🌍 Pays cliqué :', country.name);
+            selectCountry(country.id, country.name, el);
+          });
+
+          el.addEventListener('mouseover', () => {
+            el.style.width = '46px';
+            el.style.height = '46px';
+            el.style.marginTop = '-3px';
+            el.style.marginLeft = '-3px';
+            el.style.boxShadow = `0 4px 16px ${color}`;
+            el.style.lineHeight = '46px';
+          });
+
+          el.addEventListener('mouseout', () => {
+            el.style.width = '40px';
+            el.style.height = '40px';
+            el.style.marginTop = '0px';
+            el.style.marginLeft = '0px';
+            el.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+            el.style.lineHeight = '40px';
+          });
+
+          const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+            <div style="text-align: center; min-width: 150px; font-family: 'DM Sans', sans-serif;">
+              <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: #1e1e1e;">
+                ${country.name}
+              </h3>
+              <p style="margin: 4px 0; font-size: 12px; color: #c4a77d;">
+                ${country.journalistCount} journaliste(s)
+              </p>
+              <p style="margin: 4px 0; font-size: 11px; color: #646460;">
+                Risque: ${country.riskLevel}
+              </p>
+              <p style="margin: 8px 0 0 0; font-size: 10px; color: #646460;">
+                Clique pour filtrer
+              </p>
+            </div>
+          `);
+
+          const marker = new mapboxgl.Marker({ element: el })
+            .setLngLat([country.coords.lng, country.coords.lat])
+            .setPopup(popup)
+            .addTo(map);
+
+          markers[country.id] = { marker, element: el, popup };
+        });
+
+        console.log('✅ Carte Mapbox initialisée avec', countries.length, 'pays');
+      });
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'initialisation :', error);
+    }
+  }
+
+  function selectCountry(countryId, countryName, element) {
+    if (window.setCountryFilter) {
+      window.setCountryFilter(countryId, countryName);
+      console.log('✅ Galerie filtrée sur :', countryName);
+    } else {
+      console.warn('⚠️ window.setCountryFilter non disponible');
+    }
+
+    selectedCountryId = countryId;
+    updateMarkerHighlight();
+  }
+
+  function updateMarkerHighlight() {
+    Object.keys(markers).forEach(countryId => {
+      const { element } = markers[countryId];
+      if (countryId === selectedCountryId) {
+        element.style.filter = 'brightness(1.5) drop-shadow(0 0 8px #c4a77d)';
+      } else {
+        element.style.filter = 'brightness(1)';
+      }
+    });
+  }
+
+  window.resetMapFilter = function() {
+    selectedCountryId = null;
+    updateMarkerHighlight();
+  };
+
+  document.addEventListener('countryFilterCleared', () => {
+    window.resetMapFilter();
+  });
+</script>

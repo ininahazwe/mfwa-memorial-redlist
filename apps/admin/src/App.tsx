@@ -36,7 +36,9 @@ import '@refinedev/antd/dist/reset.css';
 
 console.log('🟠 [APP] App component loading...');
 
+// ============================================
 // LOADING SCREEN
+// ============================================
 const LoadingScreen = () => (
     <div style={{
         display: 'flex',
@@ -50,24 +52,9 @@ const LoadingScreen = () => (
     </div>
 );
 
-// LOGIN LAYOUT (sans sidebar)
-const LoginLayout = () => {
-    console.log('🔐 [APP] Rendering LoginLayout');
-    return (
-        <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
-            width: '100vw',
-            backgroundColor: '#f5f5f5',
-        }}>
-            <Outlet />
-        </div>
-    );
-};
-
-// Titre personnalisé pour la Sidebar
+// ============================================
+// SIDEBAR TITLE
+// ============================================
 const SidebarTitle = ({ collapsed }: { collapsed: boolean }) => (
     <div style={{
         padding: '12px',
@@ -81,6 +68,9 @@ const SidebarTitle = ({ collapsed }: { collapsed: boolean }) => (
     </div>
 );
 
+// ============================================
+// APP COMPONENT
+// ============================================
 const App = () => {
     console.log('🟠 [APP] App component rendering');
 
@@ -115,12 +105,24 @@ const App = () => {
                         }}
                     >
                         <Routes>
-                            {/* ===== AUTHENTICATED ROUTES ===== */}
+                            {/* ===== AUTHENTICATED ROUTES (Dashboard) ===== */}
                             <Route
                                 element={
                                     <Authenticated
                                         key="authenticated-layout"
-                                        fallback={<NavigateToResource resource="login" />}
+                                        fallback={
+                                            <div style={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                minHeight: '100vh',
+                                                width: '100vw',
+                                                backgroundColor: '#f5f5f5',
+                                                padding: '20px',
+                                            }}>
+                                                <Outlet />
+                                            </div>
+                                        }
                                         loading={<LoadingScreen />}
                                     >
                                         <ThemedLayoutV2
@@ -151,22 +153,8 @@ const App = () => {
                                 </Route>
                             </Route>
 
-                            {/* ===== PUBLIC ROUTES ===== */}
-                            <Route
-                                element={
-                                    <Authenticated
-                                        key="public-routes"
-                                        fallback={<LoginLayout />}
-                                        loading={<LoadingScreen />}
-                                    >
-                                        {/* Si authentifié, redirect vers journalistes */}
-                                        <NavigateToResource resource="journalists" />
-                                    </Authenticated>
-                                }
-                            >
-                                <Route path="/login" element={<LoginPage />} />
-                                <Route path="*" element={<LoginPage />} />
-                            </Route>
+                            {/* ===== LOGIN ROUTE ===== */}
+                            <Route path="/login" element={<LoginPage />} />
 
                             {/* ===== 404 FALLBACK ===== */}
                             <Route path="*" element={<ErrorComponent />} />

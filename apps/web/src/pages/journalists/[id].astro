@@ -5,7 +5,7 @@
 // Dynamic route : /journalists/[id]
 
 import Layout from '../../layouts/LayoutDefault.astro';
-import { getJournalistById, getJournalistsByCountry } from '../../lib/firebase';
+import { getJournalistById, getJournalistsByCountry } from '../../lib/db';
 
 // Récupérer l'ID du journaliste depuis l'URL
 const { id } = Astro.params;

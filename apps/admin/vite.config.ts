@@ -4,6 +4,8 @@ import * as path from 'node:path';
 
 export default defineConfig({
   plugins: [react()],
+  // Base URL pour le sous-dossier /admin/
+  base: '/admin/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

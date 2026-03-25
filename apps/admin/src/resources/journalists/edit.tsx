@@ -1,126 +1,115 @@
 // ============================================
-// JOURNALIST EDIT – IMPROVED VERSION
-// ============================================
-// Photo preview, replacement upload, deletion confirmation
+// JOURNALIST EDIT — Upload local
 // Location: apps/admin/src/resources/journalists/edit.tsx
+// ============================================
 
 import { Edit, useForm, useSelect } from '@refinedev/antd';
 import { Form, Input, InputNumber, Select, Switch, Upload, Button, Image, message, Alert, Divider } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '@/lib/firebase.ts';
 import { useState } from 'react';
 
-// ============================================
-// UPLOAD CONFIGURATION
-// ============================================
-
-const PHOTO_MAX_SIZE = 2 * 1024 * 1024; // 2MB
-const ALLOWED_FORMATS = ['image/jpeg', 'image/png'];
+const PHOTO_MAX_SIZE     = 2 * 1024 * 1024;
+const ALLOWED_FORMATS    = ['image/jpeg', 'image/png'];
 const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png'];
-
-// ============================================
-// COMPONENT
-// ============================================
+const API_URL            = import.meta.env.VITE_API_URL ?? 'http://localhost:4321';
 
 export const JournalistEdit = () => {
   const { formProps, saveButtonProps, queryResult } = useForm();
   const [uploading, setUploading] = useState(false);
 
-  // Current journalist data
   const journalist = queryResult?.data?.data;
 
-  // Retrieve the list of countries for the select
   const { selectProps: countrySelectProps } = useSelect({
-    resource: 'countries',
-    optionLabel: 'name',
-    optionValue: 'id',
+    resource:     'countries',
+    optionLabel:  'name',
+    optionValue:  'id',
     defaultValue: journalist?.countryId,
   });
 
   // ============================================
-  // PHOTO UPLOAD
+  // UPLOAD LOCAL via /api/upload
   // ============================================
 
+  const CLOUDINARY_CLOUD = 'dv8nrv6zt';
+  const CLOUDINARY_PRESET = 'memorial_upload'; // on va créer ça
+
   const handleUpload = async (file: File): Promise<string | null> => {
-    // 1. Check file size
     if (file.size > PHOTO_MAX_SIZE) {
-      message.error('❌ The photo must not exceed 2 MB');
+      message.error('❌ La photo ne doit pas dépasser 2 MB');
       return null;
     }
-
-    // 2. Check file format
     if (!ALLOWED_FORMATS.includes(file.type)) {
-      message.error('❌ Accepted format: JPG or PNG only');
+      message.error('❌ Format accepté : JPG ou PNG uniquement');
       return null;
     }
 
-    // 3. Upload
     setUploading(true);
     try {
-      const fileName = `${Date.now()}-${file.name}`;
-      const storageRef = ref(storage, `journalists/${fileName}`);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_PRESET);
 
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
+      const res = await fetch(
+          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
+          { method: 'POST', body: formData }
+      );
 
-      message.success('✅ Photo uploaded successfully');
-      return url;
+      const json = await res.json();
+
+      if (!res.ok) {
+        message.error(`❌ ${json.error?.message}`);
+        return null;
+      }
+
+      message.success('✅ Photo uploadée avec succès');
+      return json.secure_url;
+
     } catch (error: any) {
-      console.error('Upload error:', error);
-      message.error(`❌ Error during upload: ${error.message}`);
+      message.error(`❌ Erreur upload : ${error.message}`);
       return null;
     } finally {
       setUploading(false);
     }
   };
 
-  // Before upload – local validation
   const beforeUpload = async (file: File) => {
     const url = await handleUpload(file);
-
     if (url) {
       formProps.form?.setFieldValue('photoUrl', url);
     }
-
-    return false; // Prevent Ant Design automatic upload
+    return false;
   };
 
   // ============================================
   // RENDER
   // ============================================
 
-  if (!journalist) {
-    return <div>Loading...</div>;
-  }
+  if (!journalist) return <div>Chargement...</div>;
 
   return (
-      <Edit saveButtonProps={saveButtonProps} title={`Edit: ${journalist.name}`}>
+      <Edit saveButtonProps={saveButtonProps} title={`Modifier : ${journalist.name}`}>
         <Form {...formProps} layout="vertical">
-          {/* ====== SECTION 1: BASIC INFORMATION ====== */}
+
+          {/* ====== INFORMATIONS DE BASE ====== */}
           <Divider orientation="left">
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>
-            📋 Basic information
-          </span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📋 Informations</span>
           </Divider>
 
-          {/* Full name */}
           <Form.Item
-              label="Journalist *"
+              label="Journaliste *"
               name="name"
               rules={[
-                { required: true, message: '❌ Name is required' },
-                { min: 2, message: '❌ At least 2 characters' },
+                { required: true, message: '❌ Nom requis' },
+                { min: 2, message: '❌ Au moins 2 caractères' },
               ]}
           >
             <Input size="large" />
           </Form.Item>
 
-          {/* Country */}
           <Form.Item
-              label="Country *"
+              label="Pays *"
               name="countryId"
-              rules={[{ required: true, message: '❌ Country is required' }]}
+              rules={[{ required: true, message: '❌ Pays requis' }]}
           >
             <Select
                 {...countrySelectProps}
@@ -131,25 +120,22 @@ export const JournalistEdit = () => {
             />
           </Form.Item>
 
-          {/* Hidden field for countryName */}
           <Form.Item name="countryName" hidden>
             <Input />
           </Form.Item>
 
-          {/* Role / Position */}
           <Form.Item
               label="Situation *"
               name="role"
-              rules={[{ required: true, message: '❌ Role is required' }]}
+              rules={[{ required: true, message: '❌ Rôle requis' }]}
           >
             <Input size="large" />
           </Form.Item>
 
-          {/* Year of death */}
           <Form.Item
-              label="Year of death *"
+              label="Année de décès *"
               name="yearOfDeath"
-              rules={[{ required: true, message: '❌ Year is required' }]}
+              rules={[{ required: true, message: '❌ Année requise' }]}
           >
             <InputNumber
                 min={1900}
@@ -159,54 +145,38 @@ export const JournalistEdit = () => {
             />
           </Form.Item>
 
+          {/* ====== PHOTO ====== */}
           <Divider orientation="left">
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>
-            📸 Portrait photo
-          </span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📸 Portrait</span>
           </Divider>
 
-          {/* Photo info alert */}
-          <Alert message="JPG or PNG format • Max 2 MB" type="info" showIcon style={{ marginBottom: 16 }} />
+          <Alert message="Format JPG ou PNG • Max 2 MB" type="info" showIcon style={{ marginBottom: 16 }} />
 
-          {/* Current photo – preview */}
           {journalist?.photoUrl && (
-              <Form.Item label="Current photo">
-                <div style={{ marginBottom: 16 }}>
-                  <Image
-                      src={journalist.photoUrl}
-                      alt={journalist.name}
-                      width={150}
-                      height={180}
-                      style={{
-                        objectFit: 'cover',
-                        borderRadius: 8,
-                        border: '2px solid #c4a77d',
-                      }}
-                      preview={{
-                        mask: 'Preview',
-                      }}
-                  />
-                </div>
+              <Form.Item label="Photo actuelle">
+                <Image
+                    src={journalist.photoUrl}
+                    alt={journalist.name}
+                    width={150}
+                    height={180}
+                    style={{ objectFit: 'cover', borderRadius: 8, border: '2px solid #c4a77d' }}
+                    preview={{ mask: 'Aperçu' }}
+                />
               </Form.Item>
           )}
 
-          {/* Photo URL */}
           <Form.Item
-              label="Photo URL *"
+              label="URL de la photo *"
               name="photoUrl"
               rules={[
-                { required: true, message: '❌ Photo is required' },
-                {
-                  pattern: /^https?:\/\/.+/,
-                  message: '❌ Valid URL required',
-                },
+                { required: true, message: '❌ Photo requise' },
+                { pattern: /^https?:\/\/.+/, message: '❌ URL valide requise' },
               ]}
           >
             <Input placeholder="https://..." size="large" />
           </Form.Item>
 
-          {/* Upload new photo */}
-          <Form.Item label="Replace photo">
+          <Form.Item label="Remplacer la photo">
             <Upload
                 listType="picture"
                 maxCount={1}
@@ -215,60 +185,54 @@ export const JournalistEdit = () => {
                 disabled={uploading}
             >
               <Button icon={<UploadOutlined />} loading={uploading} size="large">
-                {uploading ? 'Uploading...' : 'Choose a new photo'}
+                {uploading ? 'Upload en cours...' : 'Choisir une nouvelle photo'}
               </Button>
             </Upload>
           </Form.Item>
 
+          {/* ====== DÉTAILS ====== */}
           <Divider orientation="left">
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>
-            📝 Additional details
-          </span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📝 Détails</span>
           </Divider>
 
-          {/* Biography */}
           <Form.Item label="Background" name="bio">
-            <Input.TextArea rows={3} maxLength={500} showCount />
+            <Input.TextArea rows={3} maxLength={1000} showCount />
           </Form.Item>
 
-          {/* Place of death */}
-          <Form.Item label="Place of death" name="placeOfDeath">
+          {/*<Form.Item label="Lieu du décès" name="placeOfDeath">
             <Input size="large" />
-          </Form.Item>
+          </Form.Item>*/}
 
-          {/* Circumstances */}
           <Form.Item label="Status" name="circumstances">
             <Input.TextArea rows={3} maxLength={1000} showCount />
           </Form.Item>
 
+          {/* ====== PUBLICATION ====== */}
           <Divider orientation="left">
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>
-            🔓 Publication
-          </span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>🔓 Publication</span>
           </Divider>
 
-          {/* Publication status */}
           <Form.Item
-              label="Publish on the site"
+              label="Publier sur le site"
               name="isPublished"
               valuePropName="checked"
-              extra="If disabled, the journalist will not appear on the public site"
+              extra="Si désactivé, le journaliste n'apparaîtra pas sur le site public"
           >
-            <Switch checkedChildren="✓ Published" unCheckedChildren="⊘ Draft" />
+            <Switch checkedChildren="✓ Publié" unCheckedChildren="⊘ Brouillon" />
           </Form.Item>
 
-          {/* Dates */}
           {journalist?.createdAt && (
-              <Form.Item label="Created on">
-                <Input disabled value={new Date(journalist.createdAt).toLocaleString('en-US')} size="large" />
+              <Form.Item label="Créé le">
+                <Input disabled value={new Date(journalist.createdAt).toLocaleString('fr-FR')} size="large" />
               </Form.Item>
           )}
 
           {journalist?.updatedAt && (
-              <Form.Item label="Last updated">
-                <Input disabled value={new Date(journalist.updatedAt).toLocaleString('en-US')} size="large" />
+              <Form.Item label="Dernière modification">
+                <Input disabled value={new Date(journalist.updatedAt).toLocaleString('fr-FR')} size="large" />
               </Form.Item>
           )}
+
         </Form>
       </Edit>
   );

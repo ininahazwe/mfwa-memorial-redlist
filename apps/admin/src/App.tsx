@@ -7,7 +7,7 @@ import {
     useNotificationProvider,
     ErrorComponent,
 } from '@refinedev/antd';
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import routerBindings, {
     NavigateToResource,
     UnsavedChangesNotifier
@@ -15,7 +15,7 @@ import routerBindings, {
 import { ConfigProvider, App as AntdApp, Spin } from 'antd';
 
 // Providers
-import { firestoreDataProvider } from './providers/firestoreDataProvider';
+import { restDataProvider } from './providers/restDataProvider';
 import { authProvider } from './providers/authProvider';
 
 // Pages
@@ -33,8 +33,6 @@ import { CountryEdit } from './resources/countries/edit';
 
 // Styles Ant Design
 import '@refinedev/antd/dist/reset.css';
-
-console.log('🟠 [APP] App component loading...');
 
 // ============================================
 // LOADING SCREEN
@@ -70,16 +68,16 @@ const SidebarTitle = ({ collapsed }: { collapsed: boolean }) => (
 
 // ============================================
 // APP COMPONENT
+// basename="/admin" → indispensable pour le sous-dossier cPanel
 // ============================================
 const App = () => {
-    console.log('🟠 [APP] App component rendering');
-
     return (
-        <BrowserRouter>
+        // ↓ basename="/admin" dit à React Router que l'app tourne sous /admin/
+        <BrowserRouter basename="/admin">
             <ConfigProvider>
                 <AntdApp>
                     <Refine
-                        dataProvider={firestoreDataProvider}
+                        dataProvider={restDataProvider}
                         authProvider={authProvider}
                         notificationProvider={useNotificationProvider}
                         routerProvider={routerBindings}
@@ -105,24 +103,12 @@ const App = () => {
                         }}
                     >
                         <Routes>
-                            {/* ===== AUTHENTICATED ROUTES (Dashboard) ===== */}
+                            {/* ===== AUTHENTICATED ROUTES ===== */}
                             <Route
                                 element={
                                     <Authenticated
                                         key="authenticated-layout"
-                                        fallback={
-                                            <div style={{
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                alignItems: 'center',
-                                                minHeight: '100vh',
-                                                width: '100vw',
-                                                backgroundColor: '#f5f5f5',
-                                                padding: '20px',
-                                            }}>
-                                                <Outlet />
-                                            </div>
-                                        }
+                                        fallback={<Navigate to="/login" replace />}
                                         loading={<LoadingScreen />}
                                     >
                                         <ThemedLayoutV2
@@ -135,17 +121,14 @@ const App = () => {
                                     </Authenticated>
                                 }
                             >
-                                {/* Index - redirect to journalists */}
                                 <Route index element={<NavigateToResource resource="journalists" />} />
 
-                                {/* Journalists CRUD */}
                                 <Route path="journalists">
                                     <Route index element={<JournalistList />} />
                                     <Route path="create" element={<JournalistCreate />} />
                                     <Route path="edit/:id" element={<JournalistEdit />} />
                                 </Route>
 
-                                {/* Countries CRUD */}
                                 <Route path="countries">
                                     <Route index element={<CountryList />} />
                                     <Route path="create" element={<CountryCreate />} />
@@ -153,10 +136,10 @@ const App = () => {
                                 </Route>
                             </Route>
 
-                            {/* ===== LOGIN ROUTE ===== */}
+                            {/* ===== LOGIN ===== */}
                             <Route path="/login" element={<LoginPage />} />
 
-                            {/* ===== 404 FALLBACK ===== */}
+                            {/* ===== 404 ===== */}
                             <Route path="*" element={<ErrorComponent />} />
                         </Routes>
 

@@ -28,11 +28,11 @@ export const LoginPage = () => {
             {
                 onError: (error: any) => {
                     console.error('🔴 [LOGIN] Login error:', error);
-                    setError(error?.message || 'Erreur de connexion');
+                    setError(error?.message || 'Connection error');
                 },
                 onSuccess: () => {
                     console.log('🟢 [LOGIN] Login successful');
-                    message.success('Connexion réussie!');
+                    message.success('Successful connection!');
                 },
             }
         );
@@ -107,8 +107,8 @@ export const LoginPage = () => {
                         label="Email"
                         name="email"
                         rules={[
-                            { required: true, message: 'Email requis' },
-                            { type: 'email', message: 'Email invalide' }
+                            { required: true, message: 'Email required' },
+                            { type: 'email', message: 'Invalid email' }
                         ]}
                     >
                         <Input
@@ -120,14 +120,14 @@ export const LoginPage = () => {
 
                     {/* PASSWORD */}
                     <Form.Item
-                        label="Mot de passe"
+                        label="Password"
                         name="password"
                         rules={[
-                            { required: true, message: 'Mot de passe requis' }
+                            { required: true, message: 'Password required' }
                         ]}
                     >
                         <Input.Password
-                            placeholder="Votre mot de passe"
+                            placeholder="Password"
                             disabled={isLoading}
                         />
                     </Form.Item>
@@ -141,7 +141,7 @@ export const LoginPage = () => {
                             block
                             size="large"
                         >
-                            {isLoading ? 'Connexion en cours...' : 'Se connecter'}
+                            {isLoading ? 'Connecting...' : 'Connect'}
                         </Button>
                     </Form.Item>
                 </Form>
@@ -153,7 +153,7 @@ export const LoginPage = () => {
                     color: '#999',
                     marginTop: 16,
                 }}>
-                    <p>Espace réservé aux administrateurs</p>
+                    <p>Reserved to admins</p>
                 </div>
             </Card>
         </div>

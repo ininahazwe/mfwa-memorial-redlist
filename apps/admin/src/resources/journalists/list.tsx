@@ -72,8 +72,8 @@ export const JournalistList = () => {
         deleteJournalist(
             { resource: 'journalists', id },
             {
-                onSuccess: () => message.success(`✓ ${name} a été supprimé`),
-                onError: (error: any) => message.error(`✗ Erreur: ${error?.message}`),
+                onSuccess: () => message.success(`✓ ${name} has been deleted`),
+                onError: (error: any) => message.error(`✗ Error: ${error?.message}`),
             }
         );
     };
@@ -85,7 +85,7 @@ export const JournalistList = () => {
                     <Space size="middle">
                         {/* Champ de recherche simple et efficace */}
                         <Input
-                            placeholder="Rechercher nom, pays, rôle..."
+                            placeholder="Search name, country, role..."
                             prefix={<SearchOutlined style={{ color: '#c4a77d' }} />}
                             allowClear
                             value={searchTerm}
@@ -108,7 +108,7 @@ export const JournalistList = () => {
                 pagination={{
                     pageSize: 10,
                     showSizeChanger: true,
-                    showTotal: (total) => `Total: ${total} journalists affichés`,
+                    showTotal: (total) => `Total: ${total} journalists displayed`,
                 }}
             >
                 <Table.Column
@@ -180,11 +180,11 @@ export const JournalistList = () => {
                         <Space size="small">
                             <EditButton hideText size="small" recordItemId={record.id} />
                             <Popconfirm
-                                title="Supprimer ?"
-                                description={`Supprimer ${record.name} ?`}
+                                title="Delete ?"
+                                description={`Delete ${record.name} ?`}
                                 onConfirm={() => handleDelete(record.id, record.name)}
-                                okText="Oui"
-                                cancelText="Non"
+                                okText="Yes"
+                                cancelText="No"
                                 okType="danger"
                             >
                                 <Button danger type="text" size="small" icon={<DeleteOutlined />} />

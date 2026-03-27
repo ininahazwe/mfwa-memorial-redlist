@@ -5,13 +5,29 @@
 
 import type { AuthProvider } from '@refinedev/core';
 
-const API_URL     = import.meta.env.VITE_API_URL ?? 'http://localhost:4321';
 const TOKEN_KEY   = 'mv_admin_token';
 const USER_KEY    = 'mv_admin_user';
 
 // ============================================
-// HELPER — Headers avec JWT
+// HELPER — Construire les URLs API
 // ============================================
+
+function getApiUrl(endpoint: string): string {
+  const baseUrl = import.meta.env.VITE_API_URL;
+
+  // En DEV local : ignorer VITE_API_URL même si elle existe
+  // → Laisser le proxy Vite (http://localhost:4321) gérer
+  if (import.meta.env.DEV) {
+    return endpoint;  // URL relative → proxy Vite intercept
+  }
+
+  // En PROD : utiliser VITE_API_URL
+  if (baseUrl) {
+    return `${baseUrl}${endpoint}`;
+  }
+
+  return endpoint;
+}
 
 export function authHeaders(): Record<string, string> {
   const token = localStorage.getItem(TOKEN_KEY);
@@ -31,7 +47,7 @@ export const authProvider: AuthProvider = {
   // ------------------------------------------
   login: async ({ email, password }) => {
     try {
-      const res = await fetch(`${API_URL}/api/auth/login`, {
+      const res = await fetch(getApiUrl('/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -85,7 +101,7 @@ export const authProvider: AuthProvider = {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/auth/me`, {
+      const res = await fetch(getApiUrl('/api/auth/me'), {
         headers: { Authorization: `Bearer ${token}` },
       });
 

@@ -21,7 +21,7 @@ import { authProvider } from './providers/authProvider';
 // Pages
 import { LoginPage } from './pages/login';
 
-// Resources - Journalistes
+// Resources - Journalists
 import { JournalistList } from './resources/journalists/list';
 import { JournalistCreate } from './resources/journalists/create';
 import { JournalistEdit } from './resources/journalists/edit';
@@ -46,7 +46,7 @@ const LoadingScreen = () => (
         width: '100vw',
         backgroundColor: '#f5f5f5',
     }}>
-        <Spin size="large" tip="Chargement..." />
+        <Spin size="large" tip="Loading..." fullscreen />
     </div>
 );
 
@@ -73,7 +73,13 @@ const SidebarTitle = ({ collapsed }: { collapsed: boolean }) => (
 const App = () => {
     return (
         // ↓ basename="/admin" dit à React Router que l'app tourne sous /admin/
-        <BrowserRouter basename="/admin">
+        <BrowserRouter
+            basename="/admin"
+            future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true,
+            }}
+        >
             <ConfigProvider>
                 <AntdApp>
                     <Refine
@@ -87,14 +93,14 @@ const App = () => {
                                 list: '/journalists',
                                 create: '/journalists/create',
                                 edit: '/journalists/edit/:id',
-                                meta: { label: 'Journalistes' },
+                                meta: { label: 'Journalists' },
                             },
                             {
                                 name: 'countries',
                                 list: '/countries',
                                 create: '/countries/create',
                                 edit: '/countries/edit/:id',
-                                meta: { label: 'Pays' },
+                                meta: { label: 'Countries' },
                             },
                         ]}
                         options={{

@@ -45,7 +45,7 @@ export const GET: APIRoute = async ({ params }) => {
 
         const list = rows as any[];
         if (list.length === 0) {
-            return new Response(JSON.stringify({ error: 'Pays non trouvé' }), {
+            return new Response(JSON.stringify({ error: 'Country not found' }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },
             });

@@ -32,7 +32,7 @@ export const GET: APIRoute = async ({ request }) => {
         });
 
     } catch (error: any) {
-        return new Response(JSON.stringify({ error: 'Token invalide ou expiré' }), {
+        return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
             status: 401,
             headers: { 'Content-Type': 'application/json' },
         });

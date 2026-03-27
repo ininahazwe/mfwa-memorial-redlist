@@ -11,7 +11,7 @@ import { useState } from 'react';
 const PHOTO_MAX_SIZE      = 2 * 1024 * 1024;
 const ALLOWED_FORMATS     = ['image/jpeg', 'image/png'];
 const ALLOWED_EXTENSIONS  = ['.jpg', '.jpeg', '.png'];
-const API_URL             = import.meta.env.VITE_API_URL ?? 'http://localhost:4321';
+const API_URL             = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
 export const JournalistCreate = () => {
   const { formProps, saveButtonProps } = useForm();
@@ -59,7 +59,7 @@ export const JournalistCreate = () => {
         return null;
       }
 
-      message.success('✅ Photo uploadée avec succès');
+      message.success('✅ Photo uploaded successfully');
       return json.secure_url;
 
     } catch (error: any) {
@@ -89,7 +89,7 @@ export const JournalistCreate = () => {
 
           {/* ====== INFORMATIONS DE BASE ====== */}
           <Divider orientation="left">
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📋 Informations</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📋 Information</span>
           </Divider>
 
           <Form.Item

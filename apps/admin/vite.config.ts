@@ -37,7 +37,14 @@ export default defineConfig({
     postcss: './postcss.config.js',
   },
   server: {
-    port: 5173,
-    strictPort: false,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        // Ajoute ceci pour être explicite :
+        ws: false,
+        rewrite: (path) => path,  // Ne pas réécrire le path
+      },
+    },
   },
 });

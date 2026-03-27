@@ -6,6 +6,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import { suppressWarnings } from './utils/warning-suppressor';
+
+suppressWarnings();
 
 console.log("🔵 [MAIN] Starting app initialization...");
 console.log("🔵 [MAIN] Environment variables:", {

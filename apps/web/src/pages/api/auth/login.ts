@@ -49,7 +49,7 @@ export const POST: APIRoute = async ({ request }) => {
         const { email, password } = await request.json();
 
         if (!email || !password) {
-            return new Response(JSON.stringify({ error: 'Email et mot de passe requis' }), {
+            return new Response(JSON.stringify({ error: 'Email et password required' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -64,7 +64,7 @@ export const POST: APIRoute = async ({ request }) => {
 
         const users = rows as any[];
         if (users.length === 0) {
-            return new Response(JSON.stringify({ error: 'Identifiants incorrects' }), {
+            return new Response(JSON.stringify({ error: 'wrong ID' }), {
                 status: 401,
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -75,7 +75,7 @@ export const POST: APIRoute = async ({ request }) => {
         // Vérifier le mot de passe
         const valid = await bcrypt.compare(password, user.password);
         if (!valid) {
-            return new Response(JSON.stringify({ error: 'Identifiants incorrects' }), {
+            return new Response(JSON.stringify({ error: 'wrong ID' }), {
                 status: 401,
                 headers: { 'Content-Type': 'application/json' },
             });

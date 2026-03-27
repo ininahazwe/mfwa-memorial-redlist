@@ -11,7 +11,7 @@ import { useState } from 'react';
 const PHOTO_MAX_SIZE     = 2 * 1024 * 1024;
 const ALLOWED_FORMATS    = ['image/jpeg', 'image/png'];
 const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png'];
-const API_URL            = import.meta.env.VITE_API_URL ?? 'http://localhost:4321';
+const API_URL            = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
 export const JournalistEdit = () => {
   const { formProps, saveButtonProps, queryResult } = useForm();
@@ -61,7 +61,7 @@ export const JournalistEdit = () => {
         return null;
       }
 
-      message.success('✅ Photo uploadée avec succès');
+      message.success('✅  Photo uploaded successfully');
       return json.secure_url;
 
     } catch (error: any) {
@@ -84,32 +84,32 @@ export const JournalistEdit = () => {
   // RENDER
   // ============================================
 
-  if (!journalist) return <div>Chargement...</div>;
+  if (!journalist) return <div>Loading...</div>;
 
   return (
-      <Edit saveButtonProps={saveButtonProps} title={`Modifier : ${journalist.name}`}>
+      <Edit saveButtonProps={saveButtonProps} title={`Edit : ${journalist.name}`}>
         <Form {...formProps} layout="vertical">
 
           {/* ====== INFORMATIONS DE BASE ====== */}
           <Divider orientation="left">
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📋 Informations</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📋 Information</span>
           </Divider>
 
           <Form.Item
-              label="Journaliste *"
+              label="Journalist *"
               name="name"
               rules={[
-                { required: true, message: '❌ Nom requis' },
-                { min: 2, message: '❌ Au moins 2 caractères' },
+                { required: true, message: '❌ Name required' },
+                { min: 2, message: '❌ At least 2 characters' },
               ]}
           >
             <Input size="large" />
           </Form.Item>
 
           <Form.Item
-              label="Pays *"
+              label="Countries *"
               name="countryId"
-              rules={[{ required: true, message: '❌ Pays requis' }]}
+              rules={[{ required: true, message: '❌ Country required' }]}
           >
             <Select
                 {...countrySelectProps}
@@ -127,15 +127,15 @@ export const JournalistEdit = () => {
           <Form.Item
               label="Situation *"
               name="role"
-              rules={[{ required: true, message: '❌ Rôle requis' }]}
+              rules={[{ required: true, message: '❌ Situation required' }]}
           >
             <Input size="large" />
           </Form.Item>
 
           <Form.Item
-              label="Année de décès *"
+              label="Year of death *"
               name="yearOfDeath"
-              rules={[{ required: true, message: '❌ Année requise' }]}
+              rules={[{ required: true, message: '❌ Year required' }]}
           >
             <InputNumber
                 min={1900}
@@ -169,14 +169,14 @@ export const JournalistEdit = () => {
               label="URL de la photo *"
               name="photoUrl"
               rules={[
-                { required: true, message: '❌ Photo requise' },
-                { pattern: /^https?:\/\/.+/, message: '❌ URL valide requise' },
+                { required: true, message: '❌ Photo required' },
+                { pattern: /^https?:\/\/.+/, message: '❌ Valid URL required' },
               ]}
           >
             <Input placeholder="https://..." size="large" />
           </Form.Item>
 
-          <Form.Item label="Remplacer la photo">
+          <Form.Item label="Replace photo">
             <Upload
                 listType="picture"
                 maxCount={1}
@@ -185,7 +185,7 @@ export const JournalistEdit = () => {
                 disabled={uploading}
             >
               <Button icon={<UploadOutlined />} loading={uploading} size="large">
-                {uploading ? 'Upload en cours...' : 'Choisir une nouvelle photo'}
+                {uploading ? 'Uploading...' : 'Choose a new photo'}
               </Button>
             </Upload>
           </Form.Item>
@@ -213,23 +213,23 @@ export const JournalistEdit = () => {
           </Divider>
 
           <Form.Item
-              label="Publier sur le site"
+              label="Publish on website"
               name="isPublished"
               valuePropName="checked"
-              extra="Si désactivé, le journaliste n'apparaîtra pas sur le site public"
+              extra="If unchecked, the journalist will not appear on the public website"
           >
-            <Switch checkedChildren="✓ Publié" unCheckedChildren="⊘ Brouillon" />
+            <Switch checkedChildren="✓ Published" unCheckedChildren="⊘ Draft" />
           </Form.Item>
 
           {journalist?.createdAt && (
-              <Form.Item label="Créé le">
-                <Input disabled value={new Date(journalist.createdAt).toLocaleString('fr-FR')} size="large" />
+              <Form.Item label="Created on">
+                <Input disabled value={new Date(journalist.createdAt).toLocaleString('en-EN')} size="large" />
               </Form.Item>
           )}
 
           {journalist?.updatedAt && (
-              <Form.Item label="Dernière modification">
-                <Input disabled value={new Date(journalist.updatedAt).toLocaleString('fr-FR')} size="large" />
+              <Form.Item label="Last updated">
+                <Input disabled value={new Date(journalist.updatedAt).toLocaleString('en-EN')} size="large" />
               </Form.Item>
           )}
 

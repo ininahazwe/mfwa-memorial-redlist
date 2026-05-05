@@ -28,7 +28,9 @@ interface Props {
 
 const { countries, totalJournalists } = Astro.props;
 
-const mapboxToken = import.meta.env.PUBLIC_MAPBOX_TOKEN;
+const mapboxToken = import.meta.env.PUBLIC_MAPBOX_TOKEN || process.env.PUBLIC_MAPBOX_TOKEN;
+console.log('DEBUG - mapboxToken:', mapboxToken);
+console.log('DEBUG - import.meta.env:', import.meta.env);
 
 if (!mapboxToken) {
   console.warn('⚠️ PUBLIC_MAPBOX_TOKEN n\'est pas défini');

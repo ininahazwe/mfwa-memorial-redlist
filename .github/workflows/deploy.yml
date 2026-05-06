@@ -19,14 +19,28 @@ jobs:
             cd /home/dxtrmfwa/repositories/mfwa-memorial-redlist
             git pull origin main
 
-            # Backend
-            cd server
-            npm ci
-            npm run build
-            pm2 restart git push origin main
+            # Copier .env prod avant build
+            cp /home/dxtrmfwa/public_html/memorial.mfwa.org/.env apps/web/.env
 
-            # Frontend
-            cd ../client
-            npm ci
+            # Build web
+            cd /home/dxtrmfwa/repositories/mfwa-memorial-redlist/apps/web
+            npm install --legacy-peer-deps
             npm run build
-            cp -r dist/. /home/dxtrmfwa/public_html/memorial.mfwa.org/
+
+            # Build admin
+            cd /home/dxtrmfwa/repositories/mfwa-memorial-redlist/apps/admin
+            npm install
+            npm run build
+
+            # Copier les builds vers prod
+            PROD=/home/dxtrmfwa/public_html/memorial.mfwa.org
+            REPO=/home/dxtrmfwa/repositories/mfwa-memorial-redlist
+            rm -rf $PROD/client $PROD/server $PROD/admin
+            cp -r $REPO/apps/web/dist/client $PROD/client
+            cp -r $REPO/apps/web/dist/server $PROD/server
+            cp -r $REPO/apps/admin/dist $PROD/admin
+
+            # Dépendances prod + restart
+            cd $PROD
+            npm install --omit=dev --legacy-peer-deps
+            pm2 restart memorial-web

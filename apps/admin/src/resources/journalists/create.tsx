@@ -199,7 +199,7 @@ export const JournalistCreate = () => {
           </Divider>
 
           <Form.Item label="Background" name="bio" extra="Professional background, media outlet...">
-            <Input.TextArea rows={3} placeholder="Max 1000 characters" maxLength={1000} showCount />
+            <Input.TextArea rows={3} placeholder="Max 2000 characters" maxLength={2000} showCount />
           </Form.Item>
 
           <Form.Item label="Place of death" name="placeOfDeath">
@@ -207,7 +207,7 @@ export const JournalistCreate = () => {
           </Form.Item>
 
           <Form.Item label="Circumstances" name="circumstances" extra="Case status">
-            <Input.TextArea rows={3} maxLength={1000} showCount />
+            <Input.TextArea rows={3} maxLength={2000} showCount />
           </Form.Item>
 
           {/* ====== PUBLICATION ====== */}

@@ -1,0 +1,28 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/dxtrmfwa/repositories/mfwa-memorial-redlist
+    - export PROD=/home/dxtrmfwa/public_html/memorial.mfwa.org
+
+    # Copier .env prod dans apps/web avant build
+    - cp $PROD/.env $DEPLOYPATH/apps/web/.env
+
+    # Install + build web
+    - cd $DEPLOYPATH/apps/web && npm install --legacy-peer-deps
+    - cd $DEPLOYPATH/apps/web && npm run build
+
+    # Install + build admin
+    - cd $DEPLOYPATH/apps/admin && npm install
+    - cd $DEPLOYPATH/apps/admin && npm run build
+
+    # Copier les builds vers prod
+    - rm -rf $PROD/client $PROD/server $PROD/admin
+    - cp -r $DEPLOYPATH/apps/web/dist/client $PROD/client
+    - cp -r $DEPLOYPATH/apps/web/dist/server $PROD/server
+    - cp -r $DEPLOYPATH/apps/admin/dist $PROD/admin
+
+    # Install dépendances prod
+    - cd $PROD && npm install --omit=dev --legacy-peer-deps
+
+    # Redémarrer PM2
+    - pm2 restart memorial-web

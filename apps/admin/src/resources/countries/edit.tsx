@@ -58,7 +58,7 @@ export const CountryEdit = () => {
                     label="ISO Code *"
                     name="code"
                     rules={[
-                      { required: true, message: '❌ Code is required' },
+                      { required: false, message: '❌ Code is required' },
                       {
                         len: 2,
                         message: '❌ Exactly 2 letters (e.g., ML)'
@@ -194,7 +194,7 @@ export const CountryEdit = () => {
                 label="Context Description *"
                 name="description"
                 rules={[
-                  { required: true, message: '❌ Description is required' },
+                  { required: false, message: '❌ Description is required' },
                   { min: 20, message: '❌ At least 20 characters' },
                 ]}
             >

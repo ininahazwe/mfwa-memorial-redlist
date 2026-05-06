@@ -196,11 +196,11 @@ export const JournalistEdit = () => {
           </Divider>
 
           <Form.Item label="Background" name="bio">
-            <Input.TextArea rows={3} maxLength={1000} showCount />
+            <Input.TextArea rows={3} maxLength={2000} showCount />
           </Form.Item>
 
           <Form.Item label="Status" name="circumstances">
-            <Input.TextArea rows={3} maxLength={1000} showCount />
+            <Input.TextArea rows={3} maxLength={2000} showCount />
           </Form.Item>
 
           {/* ====== PUBLICATION ====== */}

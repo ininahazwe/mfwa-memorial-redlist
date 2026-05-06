@@ -202,11 +202,11 @@ export const JournalistCreate = () => {
             <Input.TextArea rows={3} placeholder="Max 2000 characters" maxLength={2000} showCount />
           </Form.Item>
 
-          <Form.Item label="Place of death" name="placeOfDeath">
+          {/*<Form.Item label="Place of death" name="placeOfDeath">
             <Input placeholder="e.g., Timbuktu, Mali" size="large" />
-          </Form.Item>
+          </Form.Item>*/}
 
-          <Form.Item label="Circumstances" name="circumstances" extra="Case status">
+          <Form.Item label="Status" name="circumstances" extra="Case status">
             <Input.TextArea rows={3} maxLength={2000} showCount />
           </Form.Item>
 

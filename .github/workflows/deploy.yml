@@ -21,12 +21,12 @@ jobs:
 
             # Backend
             cd server
-            npm ci --omit=dev
+            npm ci
             npm run build
-            pm2 restart tracker-api
+            pm2 restart git push origin main
 
             # Frontend
             cd ../client
             npm ci
             npm run build
-            cp -r dist/. /home/dxtrmfwa/public_html/tracker.mfwa.org/
+            cp -r dist/. /home/dxtrmfwa/public_html/memorial.mfwa.org/

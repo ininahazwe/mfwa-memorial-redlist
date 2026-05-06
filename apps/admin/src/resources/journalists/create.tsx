@@ -25,19 +25,19 @@ export const JournalistCreate = () => {
   });
 
   // ============================================
-  // UPLOAD LOCAL via /api/upload
+  // UPLOAD VIA CLOUDINARY
   // ============================================
 
   const CLOUDINARY_CLOUD = 'dv8nrv6zt';
-  const CLOUDINARY_PRESET = 'memorial_upload'; // on va créer ça
+  const CLOUDINARY_PRESET = 'memorial_upload';
 
   const handleUpload = async (file: File): Promise<string | null> => {
     if (file.size > PHOTO_MAX_SIZE) {
-      message.error('❌ La photo ne doit pas dépasser 2 MB');
+      message.error('❌ Photo must not exceed 2 MB');
       return null;
     }
     if (!ALLOWED_FORMATS.includes(file.type)) {
-      message.error('❌ Format accepté : JPG ou PNG uniquement');
+      message.error('❌ Only JPG or PNG formats accepted');
       return null;
     }
 
@@ -63,7 +63,7 @@ export const JournalistCreate = () => {
       return json.secure_url;
 
     } catch (error: any) {
-      message.error(`❌ Erreur upload : ${error.message}`);
+      message.error(`❌ Upload error: ${error.message}`);
       return null;
     } finally {
       setUploading(false);
@@ -87,7 +87,7 @@ export const JournalistCreate = () => {
       <Create saveButtonProps={saveButtonProps}>
         <Form {...formProps} layout="vertical">
 
-          {/* ====== INFORMATIONS DE BASE ====== */}
+          {/* ====== GENERAL INFORMATION ====== */}
           <Divider orientation="left">
             <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📋 Information</span>
           </Divider>
@@ -100,11 +100,11 @@ export const JournalistCreate = () => {
                 { min: 2, message: '❌ At least 2 characters' },
               ]}
           >
-            <Input placeholder="Ex: Amadou Diallo" size="large" />
+            <Input placeholder="e.g., Amadou Diallo" size="large" />
           </Form.Item>
 
           <Form.Item
-              label="Countries *"
+              label="Country *"
               name="countryId"
               rules={[{ required: true, message: '❌ Required' }]}
           >
@@ -123,11 +123,11 @@ export const JournalistCreate = () => {
           </Form.Item>
 
           <Form.Item
-              label="Situation *"
+              label="Role *"
               name="role"
-              rules={[{ required: true, message: '❌ required' }]}
+              rules={[{ required: true, message: '❌ Required' }]}
           >
-            <Input placeholder="Ex: Reporter" size="large" />
+            <Input placeholder="e.g., Reporter" size="large" />
           </Form.Item>
 
           <Form.Item
@@ -138,32 +138,32 @@ export const JournalistCreate = () => {
             <InputNumber
                 min={1900}
                 max={new Date().getFullYear()}
-                placeholder="Ex: 2023"
+                placeholder="e.g., 2023"
                 size="large"
                 style={{ width: '100%' }}
             />
           </Form.Item>
 
-          {/* ====== PHOTO ====== */}
+          {/* ====== PORTRAIT ====== */}
           <Divider orientation="left">
             <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📸 Portrait</span>
           </Divider>
 
-          <Alert message="Format JPG ou PNG • Max 2 MB" type="info" showIcon style={{ marginBottom: 16 }} />
+          <Alert message="Format JPG or PNG • Max 2 MB" type="info" showIcon style={{ marginBottom: 16 }} />
 
           <Form.Item
-              label="URL de la photo *"
+              label="Photo URL *"
               name="photoUrl"
               rules={[
-                { required: true, message: '❌ required' },
-                { pattern: /^https?:\/\/.+/, message: '❌ URL valide requise (http(s)://...)' },
+                { required: true, message: '❌ Required' },
+                { pattern: /^https?:\/\/.+/, message: '❌ Valid URL required (http(s)://...)' },
               ]}
-              extra="Saisissez une URL ou uploadez une image ci-dessous"
+              extra="Enter a URL or upload an image below"
           >
             <Input placeholder="https://..." size="large" />
           </Form.Item>
 
-          <Form.Item label="Upload a picture">
+          <Form.Item label="Upload a photo">
             <Upload
                 listType="picture"
                 maxCount={1}
@@ -172,7 +172,7 @@ export const JournalistCreate = () => {
                 disabled={uploading}
             >
               <Button icon={<UploadOutlined />} loading={uploading} size="large">
-                {uploading ? 'Uploading...' : 'Choose a picture'}
+                {uploading ? 'Uploading...' : 'Choose a photo'}
               </Button>
             </Upload>
           </Form.Item>
@@ -181,7 +181,7 @@ export const JournalistCreate = () => {
               <div style={{ marginBottom: 16 }}>
                 <img
                     src={previewUrl}
-                    alt="Aperçu"
+                    alt="Preview"
                     style={{
                       maxWidth: 150,
                       height: 180,
@@ -193,20 +193,20 @@ export const JournalistCreate = () => {
               </div>
           )}
 
-          {/* ====== DÉTAILS ====== */}
+          {/* ====== DETAILS ====== */}
           <Divider orientation="left">
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📝 Détails</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📝 Details</span>
           </Divider>
 
-          <Form.Item label="Background" name="bio" extra="Parcours professionnel, médias...">
-            <Input.TextArea rows={3} placeholder="Max 1000 caractères" maxLength={1000} showCount />
+          <Form.Item label="Background" name="bio" extra="Professional background, media outlet...">
+            <Input.TextArea rows={3} placeholder="Max 1000 characters" maxLength={1000} showCount />
           </Form.Item>
 
           <Form.Item label="Place of death" name="placeOfDeath">
-            <Input placeholder="Ex: Tombouctou, Mali" size="large" />
+            <Input placeholder="e.g., Timbuktu, Mali" size="large" />
           </Form.Item>
 
-          <Form.Item label="Circumstances" name="circumstances" extra="Statut du dossier">
+          <Form.Item label="Circumstances" name="circumstances" extra="Case status">
             <Input.TextArea rows={3} maxLength={1000} showCount />
           </Form.Item>
 

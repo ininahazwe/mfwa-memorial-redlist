@@ -22,35 +22,35 @@ import { useEffect, useState } from 'react';
 const { Text } = Typography;
 
 export const JournalistList = () => {
-    // État pour la recherche
+    // State for search
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredData, setFilteredData] = useState<any[]>([]);
 
-    // Récupérer les données brutes de Firestore
+    // Fetch raw data
     const { tableProps } = useTable({
         syncWithLocation: true,
         pagination: {
-            pageSize: 100, // Charger plus de données pour la recherche
+            pageSize: 100, // Load more data for search
         },
     });
 
     const { mutate: deleteJournalist } = useDelete();
 
-    // Effet pour filtrer les données quand la recherche change
+    // Effect to filter data when search changes
     useEffect(() => {
         if (!tableProps.dataSource) {
             setFilteredData([]);
             return;
         }
 
-        // Si pas de recherche, afficher tout
+        // If no search, show all
         if (!searchTerm.trim()) {
             // @ts-ignore
             setFilteredData(tableProps.dataSource);
             return;
         }
 
-        // Filtrer les journalistes par nom ou pays
+        // Filter journalists by name, country or role
         const term = searchTerm.toLowerCase();
         const filtered = tableProps.dataSource.filter((journalist: any) => {
             const name = journalist.name?.toLowerCase() || '';
@@ -83,7 +83,7 @@ export const JournalistList = () => {
             headerProps={{
                 extra: (
                     <Space size="middle">
-                        {/* Champ de recherche simple et efficace */}
+                        {/* Search field */}
                         <Input
                             placeholder="Search name, country, role..."
                             prefix={<SearchOutlined style={{ color: '#c4a77d' }} />}
@@ -103,7 +103,7 @@ export const JournalistList = () => {
         >
             <Table
                 {...tableProps}
-                dataSource={filteredData} // Utiliser les données filtrées
+                dataSource={filteredData} // Use filtered data
                 rowKey="id"
                 pagination={{
                     pageSize: 10,
@@ -180,8 +180,8 @@ export const JournalistList = () => {
                         <Space size="small">
                             <EditButton hideText size="small" recordItemId={record.id} />
                             <Popconfirm
-                                title="Delete ?"
-                                description={`Delete ${record.name} ?`}
+                                title="Delete?"
+                                description={`Delete ${record.name}?`}
                                 onConfirm={() => handleDelete(record.id, record.name)}
                                 okText="Yes"
                                 cancelText="No"

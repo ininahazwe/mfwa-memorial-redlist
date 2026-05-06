@@ -27,19 +27,19 @@ export const JournalistEdit = () => {
   });
 
   // ============================================
-  // UPLOAD LOCAL via /api/upload
+  // UPLOAD VIA CLOUDINARY
   // ============================================
 
   const CLOUDINARY_CLOUD = 'dv8nrv6zt';
-  const CLOUDINARY_PRESET = 'memorial_upload'; // on va créer ça
+  const CLOUDINARY_PRESET = 'memorial_upload';
 
   const handleUpload = async (file: File): Promise<string | null> => {
     if (file.size > PHOTO_MAX_SIZE) {
-      message.error('❌ La photo ne doit pas dépasser 2 MB');
+      message.error('❌ Photo must not exceed 2 MB');
       return null;
     }
     if (!ALLOWED_FORMATS.includes(file.type)) {
-      message.error('❌ Format accepté : JPG ou PNG uniquement');
+      message.error('❌ Only JPG or PNG formats accepted');
       return null;
     }
 
@@ -61,11 +61,11 @@ export const JournalistEdit = () => {
         return null;
       }
 
-      message.success('✅  Photo uploaded successfully');
+      message.success('✅ Photo uploaded successfully');
       return json.secure_url;
 
     } catch (error: any) {
-      message.error(`❌ Erreur upload : ${error.message}`);
+      message.error(`❌ Upload error: ${error.message}`);
       return null;
     } finally {
       setUploading(false);
@@ -87,10 +87,10 @@ export const JournalistEdit = () => {
   if (!journalist) return <div>Loading...</div>;
 
   return (
-      <Edit saveButtonProps={saveButtonProps} title={`Edit : ${journalist.name}`}>
+      <Edit saveButtonProps={saveButtonProps} title={`Edit: ${journalist.name}`}>
         <Form {...formProps} layout="vertical">
 
-          {/* ====== INFORMATIONS DE BASE ====== */}
+          {/* ====== GENERAL INFORMATION ====== */}
           <Divider orientation="left">
             <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📋 Information</span>
           </Divider>
@@ -107,7 +107,7 @@ export const JournalistEdit = () => {
           </Form.Item>
 
           <Form.Item
-              label="Countries *"
+              label="Country *"
               name="countryId"
               rules={[{ required: true, message: '❌ Country required' }]}
           >
@@ -125,9 +125,9 @@ export const JournalistEdit = () => {
           </Form.Item>
 
           <Form.Item
-              label="Situation *"
+              label="Role *"
               name="role"
-              rules={[{ required: true, message: '❌ Situation required' }]}
+              rules={[{ required: true, message: '❌ Role required' }]}
           >
             <Input size="large" />
           </Form.Item>
@@ -145,28 +145,28 @@ export const JournalistEdit = () => {
             />
           </Form.Item>
 
-          {/* ====== PHOTO ====== */}
+          {/* ====== PORTRAIT ====== */}
           <Divider orientation="left">
             <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📸 Portrait</span>
           </Divider>
 
-          <Alert message="Format JPG ou PNG • Max 2 MB" type="info" showIcon style={{ marginBottom: 16 }} />
+          <Alert message="Format JPG or PNG • Max 2 MB" type="info" showIcon style={{ marginBottom: 16 }} />
 
           {journalist?.photoUrl && (
-              <Form.Item label="Photo actuelle">
+              <Form.Item label="Current photo">
                 <Image
                     src={journalist.photoUrl}
                     alt={journalist.name}
                     width={150}
                     height={180}
                     style={{ objectFit: 'cover', borderRadius: 8, border: '2px solid #c4a77d' }}
-                    preview={{ mask: 'Aperçu' }}
+                    preview={{ mask: 'Preview' }}
                 />
               </Form.Item>
           )}
 
           <Form.Item
-              label="URL de la photo *"
+              label="Photo URL *"
               name="photoUrl"
               rules={[
                 { required: true, message: '❌ Photo required' },
@@ -190,18 +190,14 @@ export const JournalistEdit = () => {
             </Upload>
           </Form.Item>
 
-          {/* ====== DÉTAILS ====== */}
+          {/* ====== DETAILS ====== */}
           <Divider orientation="left">
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📝 Détails</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📝 Details</span>
           </Divider>
 
           <Form.Item label="Background" name="bio">
             <Input.TextArea rows={3} maxLength={1000} showCount />
           </Form.Item>
-
-          {/*<Form.Item label="Lieu du décès" name="placeOfDeath">
-            <Input size="large" />
-          </Form.Item>*/}
 
           <Form.Item label="Status" name="circumstances">
             <Input.TextArea rows={3} maxLength={1000} showCount />
@@ -223,13 +219,13 @@ export const JournalistEdit = () => {
 
           {journalist?.createdAt && (
               <Form.Item label="Created on">
-                <Input disabled value={new Date(journalist.createdAt).toLocaleString('en-EN')} size="large" />
+                <Input disabled value={new Date(journalist.createdAt).toLocaleString('en-US')} size="large" />
               </Form.Item>
           )}
 
           {journalist?.updatedAt && (
               <Form.Item label="Last updated">
-                <Input disabled value={new Date(journalist.updatedAt).toLocaleString('en-EN')} size="large" />
+                <Input disabled value={new Date(journalist.updatedAt).toLocaleString('en-US')} size="large" />
               </Form.Item>
           )}
 

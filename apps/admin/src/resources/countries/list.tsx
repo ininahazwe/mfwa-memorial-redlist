@@ -113,7 +113,7 @@ export const CountryList = () => {
                 {/* Coordinates */}
                 <Table.Column
                     dataIndex="coords"
-                    title="Position"
+                    title="Coordinates"
                     width={120}
                     render={(value) => (
                         value ? (

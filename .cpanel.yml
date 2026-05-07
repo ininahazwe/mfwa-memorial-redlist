@@ -1,28 +1,25 @@
 ---
 deployment:
   tasks:
+    # Variables d'environnement
     - export DEPLOYPATH=/home/dxtrmfwa/repositories/mfwa-memorial-redlist
-    - export PROD=/home/dxtrmfwa/public_html/memorial.mfwa.org
+    - export PROD=/home/dxtrmfwa/public_html/assets.mfwa.org
 
-    # Copier .env prod dans apps/web avant build
-    - cp $PROD/.env $DEPLOYPATH/apps/web/.env
+    # Copier .env prod dans le repo avant build
+    - cp $PROD/.env $DEPLOYPATH/.env
 
-    # Install + build web
-    - cd $DEPLOYPATH/apps/web && npm install --legacy-peer-deps
-    - cd $DEPLOYPATH/apps/web && npm run build
+    # Install dépendances frontend
+    - cd $DEPLOYPATH && npm install --legacy-peer-deps
 
-    # Install + build admin
-    - cd $DEPLOYPATH/apps/admin && npm install
-    - cd $DEPLOYPATH/apps/admin && npm run build
+    # Build frontend
+    - cd $DEPLOYPATH && npm run build
 
-    # Copier les builds vers prod
-    - rm -rf $PROD/client $PROD/server $PROD/admin
-    - cp -r $DEPLOYPATH/apps/web/dist/client $PROD/client
-    - cp -r $DEPLOYPATH/apps/web/dist/server $PROD/server
-    - cp -r $DEPLOYPATH/apps/admin/dist $PROD/admin
+    # Copier la build frontend vers prod
+    - rm -rf $PROD/dist
+    - cp -r $DEPLOYPATH/dist $PROD/dist
 
-    # Install dépendances prod
+    # Install dépendances backend (production only)
     - cd $PROD && npm install --omit=dev --legacy-peer-deps
 
     # Redémarrer PM2
-    - pm2 restart memorial-web
+    - pm2 restart assets-mgt

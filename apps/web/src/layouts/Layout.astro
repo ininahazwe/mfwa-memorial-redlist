@@ -1,8 +1,7 @@
 ---
 // Layout.astro
-// Layout principal avec SplashScreen d'ouverture
-
-import SplashScreen from '../components/Animation.astro';
+// Layout principal : navigation entre pages avec fade transition
+// PAS de splash screen (réservé à l'accueil)
 
 interface Props {
   title: string;
@@ -13,23 +12,77 @@ const { title } = Astro.props;
 
 <!doctype html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="description" content="Mémoire Vive - A Tribute to Disappeared Journalists" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
-    <title>{title}</title>
-  </head>
-  <body>
-    <!-- SplashScreen d'ouverture (masque le chargement 1.5s + fade out 1s) -->
-    <SplashScreen />
-    
-    <!-- Contenu principal -->
-    <slot />
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="description" content="Mémoire Vive - A Tribute to Disappeared Journalists" />
+  <meta name="viewport" content="width=device-width" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="generator" content={Astro.generator} />
+  <title>{title}</title>
+</head>
+<body class="page-transition-in">
+<!-- Contenu principal avec transition fade-in -->
+<main class="content-fade-in">
+  <slot />
+</main>
+</body>
 </html>
 
 <style is:global>
-  /* Les styles globaux restent dans global.css */
+  /* Transition de page : fade out avant navigation */
+  html.page-leaving {
+    animation: pageTransitionOut 0.5s ease-in-out forwards;
+  }
+
+  /* Transition de page : fade in à l'arrivée */
+  body.page-transition-in {
+    animation: pageTransitionIn 0.5s ease-in-out forwards;
+  }
+
+  /* Animation d'entrée du contenu */
+  .content-fade-in {
+    animation: contentFadeIn 0.6s ease-out forwards;
+    animation-delay: 0.2s;
+  }
+
+  @keyframes pageTransitionOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes pageTransitionIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes contentFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 </style>
+
+<script>
+  // Gérer les transitions entre pages
+  document.addEventListener('astro:before-preparation', () => {
+    document.documentElement.classList.add('page-leaving');
+  });
+
+  document.addEventListener('astro:after-swap', () => {
+    document.documentElement.classList.remove('page-leaving');
+    document.body.classList.add('page-transition-in');
+  });
+</script>

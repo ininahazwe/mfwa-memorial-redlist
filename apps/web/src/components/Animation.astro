@@ -1,21 +1,31 @@
 ---
-// SplashScreen.astro
-// Animation d'ouverture (splash screen) qui masque le chargement des données
-// Durée : ~2.5 secondes (1.5s d'apparition + 1s de disparition)
+// Animation.astro
+// SplashScreen avec contrôle via sessionStorage
+// Affichage UNIQUEMENT à la première visite de la session
+
+interface Props {
+  showSplash?: boolean;
+}
+
+const { showSplash = true } = Astro.props;
 ---
 
-<div class="splash-screen fixed inset-0 z-[9999] bg-texture flex items-center justify-center">
+<div
+    id="splash-screen"
+    class="splash-screen fixed inset-0 z-[9999] bg-texture flex items-center justify-center"
+    data-show={showSplash}
+>
   <div class="splash-content text-center max-w-2xl px-6">
     <!-- Ligne 1 : "In Living Memory of" -->
     <p class="splash-line splash-line-1 text-sm uppercase tracking-[0.3em] text-text-muted mb-6">
       In Living Memory of
     </p>
-    
+
     <!-- Ligne 2 : "Those who dared to speak the truth" -->
     <h1 class="splash-line splash-line-2 font-display-bold text-5xl lg:text-6xl font-black text-dark leading-tight mb-8">
-      Those who dared<br />to speak the truth
+      Those who dared<br />to be truth speakers and paid with lives
     </h1>
-    
+
     <!-- Ligne 3 : Trait décoratif -->
     <div class="splash-line splash-line-3 h-1 w-16 bg-accent mx-auto"></div>
   </div>
@@ -25,11 +35,16 @@
   /* ============================================
      SPLASH SCREEN - Conteneur principal
      ============================================ */
-  
+
   .splash-screen {
     animation: splashFadeOut 1s ease-in-out forwards;
     animation-delay: 2.5s;
     backdrop-filter: blur(0px);
+  }
+
+  /* Si pas de splash à afficher, masquer immédiatement */
+  .splash-screen[data-show="false"] {
+    display: none;
   }
 
   /* ============================================
@@ -125,3 +140,20 @@
     }
   }
 </style>
+
+<script>
+  // Vérifier si c'est la première visite de la session
+  const splashScreen = document.getElementById('splash-screen');
+
+  // sessionStorage persiste pendant toute la session du navigateur
+  // localStorage persisterait même après fermeture
+  const hasSplashBeenShown = sessionStorage.getItem('splash-shown');
+
+  if (hasSplashBeenShown) {
+    // Splash déjà montré, masquer immédiatement
+    splashScreen?.setAttribute('data-show', 'false');
+  } else {
+    // Première visite : marquer comme affiché
+    sessionStorage.setItem('splash-shown', 'true');
+  }
+</script>

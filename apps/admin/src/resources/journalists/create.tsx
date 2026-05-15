@@ -1,22 +1,27 @@
 // ============================================
-// JOURNALIST CREATION — Upload local
+// JOURNALIST CREATION — Default Avatar URL
 // Location: apps/admin/src/resources/journalists/create.tsx
 // ============================================
 
 import { Create, useForm, useSelect } from '@refinedev/antd';
 import { Form, Input, InputNumber, Select, Switch, Upload, Button, message, Alert, Divider } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const PHOTO_MAX_SIZE      = 2 * 1024 * 1024;
 const ALLOWED_FORMATS     = ['image/jpeg', 'image/png'];
 const ALLOWED_EXTENSIONS  = ['.jpg', '.jpeg', '.png'];
 const API_URL             = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
+// ============================================
+// DEFAULT AVATAR URL
+// ============================================
+const DEFAULT_AVATAR_URL = 'https://res.cloudinary.com/dv8nrv6zt/image/upload/v1778796621/piafepppvt93mvqdn3xq.png';
+
 export const JournalistCreate = () => {
   const { formProps, saveButtonProps } = useForm();
   const [uploading, setUploading]     = useState(false);
-  const [previewUrl, setPreviewUrl]   = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl]   = useState<string>(DEFAULT_AVATAR_URL);
 
   const { selectProps: countrySelectProps } = useSelect({
     resource:    'countries',
@@ -25,7 +30,14 @@ export const JournalistCreate = () => {
   });
 
   // ============================================
-  // UPLOAD VIA CLOUDINARY
+  // EFFECT : Initialiser photoUrl au montage du formulaire
+  // ============================================
+  useEffect(() => {
+    formProps.form?.setFieldValue('photoUrl', DEFAULT_AVATAR_URL);
+  }, [formProps.form]);
+
+  // ============================================
+  // UPLOAD VIA CLOUDINARY (optionnel, pour remplacer l'avatar)
   // ============================================
 
   const CLOUDINARY_CLOUD = 'dv8nrv6zt';
@@ -144,12 +156,17 @@ export const JournalistCreate = () => {
             />
           </Form.Item>
 
-          {/* ====== PORTRAIT ====== */}
+          {/* ====== PORTRAIT (DEFAULT AVATAR) ====== */}
           <Divider orientation="left">
             <span style={{ fontSize: 14, fontWeight: 600, color: '#2a2a2a' }}>📸 Portrait</span>
           </Divider>
 
-          <Alert message="Format JPG or PNG • Max 2 MB" type="info" showIcon style={{ marginBottom: 16 }} />
+          <Alert
+              message="Format JPG or PNG • Max 2 MB. Default avatar assigned automatically."
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+          />
 
           <Form.Item
               label="Photo URL *"
@@ -158,12 +175,34 @@ export const JournalistCreate = () => {
                 { required: true, message: '❌ Required' },
                 { pattern: /^https?:\/\/.+/, message: '❌ Valid URL required (http(s)://...)' },
               ]}
-              extra="Enter a URL or upload an image below"
+              extra="Modify the URL or upload a custom photo below"
           >
             <Input placeholder="https://..." size="large" />
           </Form.Item>
 
-          <Form.Item label="Upload a photo">
+          {/* Preview de l'avatar */}
+          {previewUrl && (
+              <div style={{ marginBottom: 24 }}>
+                <p style={{ fontSize: 12, fontWeight: 500, color: '#666', marginBottom: 8 }}>
+                  Preview:
+                </p>
+                <img
+                    src={previewUrl}
+                    alt="Avatar preview"
+                    style={{
+                      maxWidth: 150,
+                      height: 180,
+                      objectFit: 'cover',
+                      borderRadius: 8,
+                      border: '2px solid #c4a77d',
+                    }}
+                    onError={() => setPreviewUrl(DEFAULT_AVATAR_URL)}
+                />
+              </div>
+          )}
+
+          {/* Upload custom photo (optional) */}
+          <Form.Item label="Upload a custom photo (optional)">
             <Upload
                 listType="picture"
                 maxCount={1}
@@ -176,22 +215,6 @@ export const JournalistCreate = () => {
               </Button>
             </Upload>
           </Form.Item>
-
-          {previewUrl && (
-              <div style={{ marginBottom: 16 }}>
-                <img
-                    src={previewUrl}
-                    alt="Preview"
-                    style={{
-                      maxWidth: 150,
-                      height: 180,
-                      objectFit: 'cover',
-                      borderRadius: 8,
-                      border: '2px solid #c4a77d',
-                    }}
-                />
-              </div>
-          )}
 
           {/* ====== DETAILS ====== */}
           <Divider orientation="left">

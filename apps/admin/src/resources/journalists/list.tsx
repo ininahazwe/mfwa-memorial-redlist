@@ -16,64 +16,70 @@ import {
     Input,
 } from 'antd';
 import { DeleteOutlined, SearchOutlined } from '@ant-design/icons';
-import { useDelete } from '@refinedev/core';
-import { useEffect, useState } from 'react';
+import { useDelete, HttpError } from '@refinedev/core';
+import { useState, useEffect } from 'react';
 
 const { Text } = Typography;
 
-export const JournalistList = () => {
-    // State for search
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filteredData, setFilteredData] = useState<any[]>([]);
+// Interface pour typer vos données (optionnel mais recommandé)
+interface IJournalist {
+    id: string;
+    name: string;
+    countryName: string;
+    role: string;
+    photoUrl: string;
+    yearOfDeath: number;
+    isPublished: boolean;
+}
 
-    // Fetch raw data
-    const { tableProps } = useTable({
-        syncWithLocation: true,
+export const JournalistList = () => {
+    // État local uniquement pour l'affichage de l'input
+    const [searchValue, setSearchValue] = useState<string>("");
+
+    const { tableProps, setFilters, filters } = useTable<IJournalist, HttpError>({
+        syncWithLocation: true, // Crucial pour le retour à la page initiale
         pagination: {
-            pageSize: 100, // Load more data for search
+            pageSize: 10,
+        },
+        sorters: {
+            initial: [
+                {
+                    field: "name",
+                    order: "asc",
+                },
+            ],
         },
     });
 
     const { mutate: deleteJournalist } = useDelete();
 
-    // Effect to filter data when search changes
+    // Synchroniser l'input si l'URL contient déjà un filtre au chargement
     useEffect(() => {
-        if (!tableProps.dataSource) {
-            setFilteredData([]);
-            return;
+        const searchFilter = filters.find((f: any) => f.field === "q" || f.field === "name");
+        if (searchFilter && 'value' in searchFilter) {
+            setSearchValue(searchFilter.value);
         }
+    }, [filters]);
 
-        // If no search, show all
-        if (!searchTerm.trim()) {
-            // @ts-ignore
-            setFilteredData(tableProps.dataSource);
-            return;
-        }
+    // Gestion de la recherche via Refine (impacte l'URL)
+    const handleSearch = (value: string) => {
+        setSearchValue(value);
+        setFilters([
+            {
+                field: "name", // Ou "q" pour une recherche globale selon votre API
+                operator: "contains",
+                value: value || undefined,
+            },
+        ]);
+    };
 
-        // Filter journalists by name, country or role
-        const term = searchTerm.toLowerCase();
-        const filtered = tableProps.dataSource.filter((journalist: any) => {
-            const name = journalist.name?.toLowerCase() || '';
-            const country = journalist.countryName?.toLowerCase() || '';
-            const role = journalist.role?.toLowerCase() || '';
-
-            return (
-                name.includes(term) ||
-                country.includes(term) ||
-                role.includes(term)
-            );
-        });
-
-        setFilteredData(filtered);
-    }, [searchTerm, tableProps.dataSource]);
-
-    // Delete handler
+    // Handler de suppression
     const handleDelete = (id: string, name: string) => {
         deleteJournalist(
             { resource: 'journalists', id },
             {
-                onSuccess: () => message.success(`✓ ${name} has been deleted`),
-                onError: (error: any) => message.error(`✗ Error: ${error?.message}`),
+                onSuccess: () => message.success(`✓ ${name} a été supprimé`),
+                onError: (error) => message.error(`✗ Erreur: ${error?.message}`),
             }
         );
     };
@@ -83,18 +89,21 @@ export const JournalistList = () => {
             headerProps={{
                 extra: (
                     <Space size="middle">
-                        {/* Search field */}
                         <Input
-                            placeholder="Search name, country, role..."
+                            placeholder="Rechercher un nom, pays..."
                             prefix={<SearchOutlined style={{ color: '#c4a77d' }} />}
                             allowClear
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            value={searchValue}
+                            onChange={(e) => handleSearch(e.target.value)}
                             style={{ width: 350 }}
                         />
 
                         <Text type="secondary" style={{ fontSize: 12 }}>
-                            {filteredData.length} / {tableProps.dataSource?.length || 0} journalists
+                            Total : {
+                            typeof tableProps.pagination !== "boolean"
+                                ? tableProps.pagination?.total
+                                : 0
+                        } journalistes
                         </Text>
                         <CreateButton type="primary" style={{ color: "white" }} />
                     </Space>
@@ -103,71 +112,66 @@ export const JournalistList = () => {
         >
             <Table
                 {...tableProps}
-                dataSource={filteredData} // Use filtered data
                 rowKey="id"
                 pagination={{
-                    pageSize: 10,
+                    ...tableProps.pagination,
                     showSizeChanger: true,
-                    showTotal: (total) => `Total: ${total} journalists displayed`,
+                    showTotal: (total) => `${total} journalistes au total`,
                 }}
             >
                 <Table.Column
                     dataIndex="photoUrl"
                     title="Photo"
                     width={70}
-                    render={(value, record: any) => (
+                    render={(value, record: IJournalist) => (
                         <Image
                             src={value}
                             alt={record.name}
                             width={50}
                             height={60}
                             style={{ objectFit: 'cover', borderRadius: 4, border: '1px solid #e8dcc8' }}
-                            fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6ZAAAASklEQVR42u3QMQEAAAiDMH+/6KFfWwAA4NkLrLiNiAACCCCCgEAAAsgAgEAAAsgAgEAAAsgAgEAAAsgAgEAA/QEEEQEAJQPBjQIGESkc0QAAAAASUVORK5CYII="
+                            fallback="https://via.placeholder.com/50x60?text=N/A"
                         />
                     )}
                 />
 
                 <Table.Column
                     dataIndex="name"
-                    title="Name"
+                    title="Nom"
                     render={(value) => <Text strong style={{ color: '#2a2a2a' }}>{value}</Text>}
-                    sorter={(a: any, b: any) =>
-                        (a.name || '').localeCompare(b.name || '')
-                    }
+                    sorter
                 />
 
                 <Table.Column
                     dataIndex="countryName"
-                    title="Country"
+                    title="Pays"
                     render={(value) => (
                         <Badge color="#c4a77d" text={<span style={{ color: '#666' }}>{value}</span>} />
                     )}
-                    sorter={(a: any, b: any) =>
-                        (a.countryName || '').localeCompare(b.countryName || '')
-                    }
+                    sorter
                 />
 
                 <Table.Column
                     dataIndex="role"
-                    title="Role"
+                    title="Rôle"
                     render={(value) => <Text type="secondary" style={{ fontSize: 12 }}>{value}</Text>}
                 />
 
                 <Table.Column
                     dataIndex="yearOfDeath"
-                    title="Year"
+                    title="Année"
                     width={100}
                     render={(value) => <Text strong style={{ color: '#c4a77d' }}>✦ {value}</Text>}
-                    sorter={(a: any, b: any) => (a.yearOfDeath || 0) - (b.yearOfDeath || 0)}
+                    sorter
                 />
 
                 <Table.Column
                     dataIndex="isPublished"
-                    title="Status"
+                    title="Statut"
                     render={(value) => (
                         <Badge
                             status={value ? 'success' : 'processing'}
-                            text={value ? 'Published' : 'Draft'}
+                            text={value ? 'Publié' : 'Brouillon'}
                         />
                     )}
                 />
@@ -176,15 +180,15 @@ export const JournalistList = () => {
                     title="Actions"
                     width={120}
                     fixed="right"
-                    render={(_, record: any) => (
+                    render={(_, record: IJournalist) => (
                         <Space size="small">
                             <EditButton hideText size="small" recordItemId={record.id} />
                             <Popconfirm
-                                title="Delete?"
-                                description={`Delete ${record.name}?`}
+                                title="Supprimer ?"
+                                description={`Supprimer ${record.name} ?`}
                                 onConfirm={() => handleDelete(record.id, record.name)}
-                                okText="Yes"
-                                cancelText="No"
+                                okText="Oui"
+                                cancelText="Non"
                                 okType="danger"
                             >
                                 <Button danger type="text" size="small" icon={<DeleteOutlined />} />

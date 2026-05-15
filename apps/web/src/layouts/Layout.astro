@@ -1,7 +1,7 @@
 ---
 // Layout.astro
-// Layout principal : navigation entre pages avec fade transition
-// PAS de splash screen (réservé à l'accueil)
+// Layout principal pour pages internes (journalistes, etc)
+// Transitions ultra-smooth synchronisées avec LayoutHome
 
 interface Props {
   title: string;
@@ -20,69 +20,184 @@ const { title } = Astro.props;
   <meta name="generator" content={Astro.generator} />
   <title>{title}</title>
 </head>
-<body class="page-transition-in">
-<!-- Contenu principal avec transition fade-in -->
-<main class="content-fade-in">
+<body>
+<!-- Overlay de transition (fade noir) -->
+<div id="transition-overlay" class="transition-overlay"></div>
+
+<!-- Conteneur principal -->
+<main id="main-content" class="content-wrapper">
   <slot />
 </main>
 </body>
 </html>
 
 <style is:global>
-  /* Transition de page : fade out avant navigation */
-  html.page-leaving {
-    animation: pageTransitionOut 0.5s ease-in-out forwards;
+  /* ========================================
+     PRÉVENTION DU LAYOUT SHIFT
+     ======================================== */
+
+  html, body {
+    height: 100%;
+    overflow-x: hidden;
   }
 
-  /* Transition de page : fade in à l'arrivée */
-  body.page-transition-in {
-    animation: pageTransitionIn 0.5s ease-in-out forwards;
+  body {
+    transition: none;
+    overscroll-behavior: none;
   }
 
-  /* Animation d'entrée du contenu */
-  .content-fade-in {
-    animation: contentFadeIn 0.6s ease-out forwards;
-    animation-delay: 0.2s;
+  /* Freeze le scroll pendant la transition OUT */
+  body.page-leaving {
+    overflow: hidden;
+    scroll-behavior: auto;
   }
 
-  @keyframes pageTransitionOut {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
+  /* ========================================
+     MAIN CONTENT - Gestion des transitions
+     ======================================== */
+
+  .content-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+
+    /* Animation fluide à l'entrée */
+    animation: contentFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
-  @keyframes pageTransitionIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+  /* SORTIE : fade out lent et stable */
+  body.page-leaving .content-wrapper {
+    animation: contentFadeOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
+
+  /* ========================================
+     OVERLAY DE TRANSITION
+     ======================================== */
+
+  .transition-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    z-index: 5000;
+    pointer-events: none;
+    transition: none;
+  }
+
+  /* Overlay visible pendant la transition */
+  body.page-leaving .transition-overlay {
+    animation: overlayFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  body:not(.page-leaving) .transition-overlay {
+    animation: overlayFadeOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* ========================================
+     ANIMATIONS - Courbes easing identiques
+     ======================================== */
 
   @keyframes contentFadeIn {
     from {
       opacity: 0;
-      transform: translateY(10px);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+    }
+  }
+
+  @keyframes contentFadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes overlayFadeIn {
+    from {
+      background-color: rgba(0, 0, 0, 0);
+    }
+    to {
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  @keyframes overlayFadeOut {
+    from {
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+    to {
+      background-color: rgba(0, 0, 0, 0);
+    }
+  }
+
+  /* ========================================
+     RESPONSIVE
+     ======================================== */
+
+  @media (max-width: 768px) {
+    .content-wrapper {
+      min-height: 100vh;
     }
   }
 </style>
 
 <script>
-  // Gérer les transitions entre pages
+  // Synchronisation identique avec LayoutHome pour transitions fluides
+
+  let scrollPosition = 0;
+  let isTransitioning = false;
+
+  // AVANT navigation
   document.addEventListener('astro:before-preparation', () => {
+    if (isTransitioning) return;
+    isTransitioning = true;
+
+    // Sauvegarder la position de scroll
+    scrollPosition = window.scrollY;
+
+    // Marquer le départ
     document.documentElement.classList.add('page-leaving');
+    document.body.classList.add('page-leaving');
+
+    // Empêcher le scroll et layout shift
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
   });
 
+  // APRÈS swap du DOM
   document.addEventListener('astro:after-swap', () => {
+    // Retirer les classes
     document.documentElement.classList.remove('page-leaving');
-    document.body.classList.add('page-transition-in');
+    document.body.classList.remove('page-leaving');
+
+    // Restaurer le scroll
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+
+    // Scroll au top avec délai pour éviter les saccades
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      isTransitioning = false;
+    }, 100);
+  });
+
+  // Fallback : réinitialiser après timeout
+  document.addEventListener('astro:before-route-update', () => {
+    setTimeout(() => {
+      if (isTransitioning) {
+        document.body.classList.remove('page-leaving');
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        isTransitioning = false;
+      }
+    }, 1500);
   });
 </script>
